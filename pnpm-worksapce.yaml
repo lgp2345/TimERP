@@ -1,5 +1,0 @@
-packages:
-  # 后端代码
-  - 'server'
-  # 客户端代码
-  - 'apps/*'

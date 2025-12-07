@@ -1,7 +1,17 @@
-import AppRoutes from "./router";
+import { useRoutes } from "react-router-dom";
 
-function App() {
-  return <AppRoutes></AppRoutes>;
+function AppRoutes() {
+  const element = useRoutes([
+    {
+      path: "/",
+      element: <div className="p-4">TimERP Admin</div>,
+    },
+  ]);
+  return element;
 }
 
-export default App;
+export default function App() {
+  return <AppRoutes />;
+}
+
+

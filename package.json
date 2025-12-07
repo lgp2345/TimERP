@@ -1,21 +1,19 @@
 {
-  "name": "stigERP",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "timmerp",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.12.0",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "husky install",
-    "lint": "eslint . --ext .js,.ts,.tsx",
-    "format": "prettier --write ."
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "format": "biome format .",
+    "check": "biome check ."
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.6.5",
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.0",
+    "turbo": "^2.0.0",
+    "typescript": "^5.6.0"
   }
 }
