@@ -1,11 +1,9 @@
 {
-  "$schema": "https://turbo.build/schema.json",
+  "$schema": "https://turborepo.com/schema.json",
   "pipeline": {
     "dev": {
       "cache": false,
-      "dependsOn": [
-        "^dev"
-      ]
+      "persistent": true
     },
     "build": {
       "dependsOn": [
@@ -16,11 +14,8 @@
         "build/**"
       ]
     },
-    "lint": {
-      "outputs": []
-    },
-    "test": {
-      "outputs": []
-    }
+    "lint": {},
+    "test": {},
+    "test:e2e": {}
   }
 }
