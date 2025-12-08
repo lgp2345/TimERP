@@ -4,13 +4,11 @@
     "module": "ESNext",
     "moduleResolution": "NodeNext",
     "strict": true,
-    "jsx": "react-jsx",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
     "paths": {
       "@timmerp/*": [
         "packages/*/src"
