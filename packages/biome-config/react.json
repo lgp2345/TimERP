@@ -1,0 +1,20 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.3.8/schema.json",
+  "root": false,
+  "extends": [
+    "./base.json"
+  ],
+  "files": {
+    "includes": [
+      "**/*.jsx",
+      "**/*.tsx"
+    ],
+    "ignoreUnknown": false
+  },
+  "linter": {
+    "enabled": true,
+    "domains": {
+      "react": "recommended"
+    }
+  }
+}
