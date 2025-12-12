@@ -3,5 +3,10 @@
   "root": false,
   "extends": [
     "@repo/biome-config/react"
-  ]
+  ],
+  "files": {
+    "includes": [
+      "**"
+    ]
+  }
 }
