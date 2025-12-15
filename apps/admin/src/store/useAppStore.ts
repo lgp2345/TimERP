@@ -9,5 +9,3 @@ export const useAppStore = create<AppState>((set) => ({
   initialized: false,
   setInitialized: (value) => set({ initialized: value }),
 }));
-
-

@@ -6,5 +6,3 @@ export class AppService {
     return "TimERP API";
   }
 }
-
-

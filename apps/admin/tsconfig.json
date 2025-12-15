@@ -5,19 +5,13 @@
     "baseUrl": "./",
     "outDir": "./dist",
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"]
     },
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
-    "types": [
-      "vite/client"
-    ]
+    "types": ["vite/client"],
+    "strictNullChecks": true
   },
-  "include": [
-    "src",
-    "vite.config.ts"
-  ]
+  "include": ["src", "vite.config.ts"]
 }
