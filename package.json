@@ -8,8 +8,8 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "test": "turbo test",
-    "format": "biome format .",
-    "check": "biome check .",
+    "fix": "ultracite fix .",
+    "check": "ultracite check .",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -17,10 +17,17 @@
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
     "husky": "^9.1.6",
+    "lint-staged": "^16.2.7",
     "turbo": "^2.6.3",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "ultracite": "6.4.1"
   },
   "dependencies": {
     "zod": "^4.1.13"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,jsonc,css,scss,md,mdx}": [
+      "pnpm dlx ultracite fix"
+    ]
   }
 }
