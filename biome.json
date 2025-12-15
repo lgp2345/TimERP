@@ -1,4 +1,15 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "extends": ["ultracite/core", "ultracite/react", "ultracite/remix"]
+  "extends": ["ultracite/core", "ultracite/react", "ultracite/remix"],
+  "overrides": [
+    {
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noInterface": "off"
+          }
+        }
+      }
+    }
+  ]
 }
