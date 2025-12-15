@@ -22,8 +22,8 @@ function Login() {
   });
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-      <div className="w-full max-w-md">
+    <div className="xl:justify-end-safe flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="w-full max-w-md xl:mr-20">
         <div className="space-y-8 rounded-2xl border border-border/50 bg-card p-8 shadow-2xl backdrop-blur-sm">
           <div className="space-y-2 text-center">
             <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
