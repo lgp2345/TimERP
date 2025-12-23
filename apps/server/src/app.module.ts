@@ -1,11 +1,20 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-import { APP_GUARD } from "@nestjs/core";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
+import { AuthModule } from "@repo/auth";
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true })],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    AuthModule.forRoot({
+      databaseUrl: process.env.DATABASE_URL ?? "",
+      redisUrl: process.env.REDIS_URL ?? "redis://localhost:6379",
+      jwtSecret: process.env.JWT_SECRET ?? "dev-secret",
+      cookieSecure: process.env.NODE_ENV === "production",
+      cookieSameSite: "lax",
+    }),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -5,19 +5,39 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAppStore } from "@/store/useAppStore";
 
 export const Route = createFileRoute("/login")({ component: Login });
 
 function Login() {
+  const setAccessToken = useAppStore((s) => s.setAccessToken);
+
   const form = useForm({
     defaultValues: {
-      companyCode: "",
       username: "",
       password: "",
       rememberMe: false,
     },
     onSubmit: async ({ value }) => {
-      console.log(value);
+      const res = await fetch("/auth/login", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          username: value.username,
+          password: value.password,
+        }),
+      });
+
+      if (!res.ok) throw new Error("登录失败");
+      const data: unknown = await res.json();
+      const accessToken =
+        typeof (data as { accessToken?: unknown }).accessToken === "string"
+          ? (data as { accessToken: string }).accessToken
+          : null;
+      if (!accessToken) throw new Error("登录失败");
+
+      setAccessToken(accessToken, value.rememberMe ? "local" : "session");
     },
   });
 
@@ -41,37 +61,6 @@ function Login() {
               form.handleSubmit();
             }}
           >
-            <form.Field
-              name="companyCode"
-              validators={{
-                onChange: ({ value }) =>
-                  value ? undefined : "公司编码不能为空",
-              }}
-            >
-              {(field) => (
-                <div className="space-y-2">
-                  <Label htmlFor={field.name}>公司编码</Label>
-                  <div className="relative">
-                    <Building2 className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      className="pl-10"
-                      id={field.name}
-                      name={field.name}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder="请输入公司编码"
-                      value={field.state.value}
-                    />
-                  </div>
-                  {field.state.meta.errors && (
-                    <p className="text-destructive text-sm">
-                      {field.state.meta.errors[0]}
-                    </p>
-                  )}
-                </div>
-              )}
-            </form.Field>
-
             <form.Field
               name="username"
               validators={{
