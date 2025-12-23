@@ -1,0 +1,19 @@
+---
+description: React general guidelines
+alwaysApply: false
+---
+# React Guidelines
+
+## 基础规则
+- 只用函数组件（禁止 class 组件）
+- 只用命名导出（禁止 default export）
+- 状态更新优先事件处理（避免用 `useEffect` 做同步）
+
+## 组件与逻辑
+- 组件保持小而专一，复杂逻辑抽到自定义 hook
+- props 解构；回调用 `handleXxx` 命名
+- 不要在组件内部定义组件
+
+## 性能
+- 只在确实昂贵的渲染上用 `memo`
+- 只有在必要时才 `useCallback` / `useMemo`，避免滥用

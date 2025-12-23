@@ -1,0 +1,12 @@
+---
+globs: ["apps/server/src/**/*.{ts,tsx}"]
+alwaysApply: false
+---
+
+# Backend (NestJS + Fastify)
+
+- 模块边界：按 `apps/server/src/modules/*` 拆分，避免在 `app.*` 堆业务逻辑
+- DTO/校验：优先复用 `packages/schema`（Zod），避免散落的手写校验
+- 依赖注入：服务通过构造器注入，避免单例/全局变量
+- 只用命名导出；禁止 `any`
+

@@ -1,0 +1,12 @@
+---
+globs: []
+alwaysApply: true
+---
+
+# Monorepo Conventions
+
+- 包间依赖：`apps/*` 只能通过 workspace 包入口依赖 `packages/*`，禁止深层路径导入
+- 禁止跨包相对路径引用源码（如 `../../packages/*/src`）
+- 导入使用 `import { type X }` 分离类型
+- 变更优先在对应包内完成，避免把共享逻辑塞进 `apps/*`
+

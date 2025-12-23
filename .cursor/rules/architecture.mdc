@@ -1,0 +1,28 @@
+---
+globs: []
+alwaysApply: true
+---
+
+# Architecture
+
+## Tech Stack
+- **Frontend**: React 19, TypeScript, Zustand, Vite, TanStack Router/Query/Form/Table, Zod, shadcn/ui, tailwindcss
+- **Backend**: NestJS, fastify, Drizzle, PostgreSQL, Redis, Better Auth
+- **Monorepo**: Turborepo + pnpm
+
+## Package Structure
+```
+packages/
+├── auth/     # Better Auth + JWT
+├── db/    # Drizzle ORM + PostgreSQL
+├── schema/        # Zod
+└── config/    # Config typescript
+```
+
+## Key Principles
+- 只用函数组件（禁止 class 组件）
+- 只用命名导出（禁止 default export）
+- 优先用 `type`（仅在扩展第三方类型时用 `interface`）
+- 优先用字符串字面量联合类型（避免 enum）
+- 禁止 `any`
+- 状态更新优先用事件处理（避免用 `useEffect` 做同步）

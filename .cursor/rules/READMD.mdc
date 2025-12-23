@@ -1,0 +1,30 @@
+---
+globs: []
+alwaysApply: true
+---
+# Cursor Rules
+
+## Tech Stack
+- **Monorepo**: Turborepo + pnpm
+- **Backend**: NestJS (Fastify), Drizzle, PostgreSQL, Redis, Better Auth, Zod
+- **Frontend**: React, Vite, Zustand, TanStack Router/Query/Form/Table, Zod, Tailwind, shadcn/ui
+
+## Rules
+- **architecture.mdc**: repo 结构与约束（always）
+- **cost-saving.mdc**: 输出与改动范围约束（always）
+- **monorepo-conventions.mdc**: monorepo 依赖与导入边界（always）
+- **typescript-guidelines.mdc**: TypeScript 规范（`.ts/.tsx`）
+- **react-general-guidelines.mdc**: React 规范
+- **frontend-tanstack.mdc**: 管理端路由/请求/状态约束（admin）
+- **backend-nestjs.mdc**: 服务端模块/校验/DI 约束（server）
+- **db-drizzle.mdc**: Drizzle schema/query 约束（db）
+- **ultracite.mdc**: Biome/Ultracite 风格与质量约束
+
+## Packages / Apps
+- `apps/server`: NestJS 服务
+- `apps/admin`: React 管理端
+- `packages/schema`: 跨端共享（Zod schemas + 类型等）
+- `packages/auth`: JWT / Better Auth 的完整鉴权方案
+- `packages/config`: TypeScript 公共配置
+- `packages/db`: Drizzle ORM + PostgreSQL
+

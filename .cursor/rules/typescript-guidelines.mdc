@@ -1,0 +1,28 @@
+---
+description: TypeScript best practices and conventions for the codebase, including strict typing, naming conventions, and type safety guidelines.
+globs: ["**/*.ts", "**/*.tsx"]
+alwaysApply: false
+---
+
+# TypeScript Guidelines
+
+## 类型安全
+- 开启严格模式（strict / noImplicitAny 等）
+- 禁止 `any`（类型不明确用 `unknown`，并在使用点收窄）
+
+## 类型定义
+- 优先用 `type`；仅在扩展第三方类型时用 `interface`
+- 优先用字符串字面量联合类型，避免 `enum`
+- 类型导入使用 `import { type X }` 与值导入分离
+
+## 命名
+- 组件 props 类型以 `Props` 结尾
+- 事件处理函数用 `handleXxx`，布尔用 `isXxx` / `hasXxx`
+
+## 推导与显式标注
+- 能清晰推导就让 TS 推导
+- 对“边界”位置显式标注：函数入参/返回、对外导出、跨层数据结构、API 响应
+
+## 运行时校验
+- 外部输入（请求参数/表单/环境变量）必须做运行时校验（优先复用 `packages/schema` 的 Zod）
+- 结果类型优先用可判别联合（discriminated union）

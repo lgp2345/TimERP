@@ -1,0 +1,11 @@
+---
+globs: ["apps/server/src/**/*.{ts,tsx}", "packages/db/**/*.{ts,tsx}"]
+alwaysApply: false
+---
+
+# DB (Drizzle + PostgreSQL)
+
+- schema：优先集中在 `packages/db` / `apps/server/src/db/schema`，避免重复定义
+- 查询：使用 drizzle query builder，避免拼 SQL 字符串
+- 类型：表字段类型从 schema 推导，避免手写重复类型
+

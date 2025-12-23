@@ -1,0 +1,12 @@
+---
+globs: ["apps/admin/src/**/*.{ts,tsx}"]
+alwaysApply: false
+---
+
+# Frontend (React + TanStack)
+
+- 路由：只在 `apps/admin/src/routes` 下新增路由文件，保持与 `routeTree.gen.ts` 机制一致
+- 数据请求：用 TanStack Query，避免手写全局缓存
+- 状态：优先事件驱动更新，避免用 `useEffect` 做状态同步
+- 组件：只用函数组件；只用命名导出；避免 `any`
+
