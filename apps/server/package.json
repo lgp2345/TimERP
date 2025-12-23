@@ -15,7 +15,6 @@
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.6",
     "@nestjs/platform-fastify": "^11.1.9",
-    "@repo/shared": "workspace:*",
     "@thallesp/nestjs-better-auth": "^2.2.0",
     "better-auth": "^1.4.7",
     "drizzle-orm": "^0.44.7",
@@ -28,7 +27,7 @@
   "devDependencies": {
     "@nestjs/cli": "^11.0.10",
     "@nestjs/testing": "^11.1.6",
-    "@repo/typescript-config": "workspace:*",
+    "@repo/config": "workspace:*",
     "@types/node": "^22.7.4"
   }
 }

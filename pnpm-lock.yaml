@@ -44,9 +44,6 @@ importers:
       '@radix-ui/react-slot':
         specifier: ^1.2.4
         version: 1.2.4(@types/react@19.2.7)(react@19.2.1)
-      '@repo/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
       '@tanstack/react-form':
         specifier: ^1.27.3
         version: 1.27.3(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
@@ -87,9 +84,9 @@ importers:
         specifier: ^5.0.9
         version: 5.0.9(@types/react@19.2.7)(react@19.2.1)(use-sync-external-store@1.6.0(react@19.2.1))
     devDependencies:
-      '@repo/typescript-config':
+      '@repo/config':
         specifier: workspace:*
-        version: link:../../packages/typescript-config
+        version: link:../../packages/config
       '@tailwindcss/vite':
         specifier: ^4.1.17
         version: 4.1.17(vite@7.2.7(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
@@ -118,7 +115,7 @@ importers:
         specifier: ^2.1.4
         version: 2.1.9(@types/node@22.19.1)(lightningcss@1.30.2)(terser@5.44.1)
 
-  apps/api:
+  apps/server:
     dependencies:
       '@nestjs/common':
         specifier: ^11.1.6
@@ -156,9 +153,6 @@ importers:
       rxjs:
         specifier: ^7.8.1
         version: 7.8.2
-      zod:
-        specifier: ^4.2.1
-        version: 4.2.1
     devDependencies:
       '@nestjs/cli':
         specifier: ^11.0.10
@@ -166,24 +160,14 @@ importers:
       '@nestjs/testing':
         specifier: ^11.1.6
         version: 11.1.9(@nestjs/common@11.1.9(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.9)
-      '@repo/typescript-config':
+      '@repo/config':
         specifier: workspace:*
-        version: link:../../packages/typescript-config
+        version: link:../../packages/config
       '@types/node':
         specifier: ^22.7.4
         version: 22.19.1
 
-  packages/shared:
-    dependencies:
-      zod:
-        specifier: ^4.2.1
-        version: 4.2.1
-    devDependencies:
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-
-  packages/typescript-config: {}
+  packages/config: {}
 
 packages:
 
@@ -4299,9 +4283,6 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zod@4.1.13:
-    resolution: {integrity: sha512-AvvthqfqrAhNH9dnfmrfKzX5upOdjUVJYFqNSlkmGf64gRaTzlPwz99IHYnVs28qYAybvAlBV+H7pn0saFY4Ig==}
-
   zod@4.2.1:
     resolution: {integrity: sha512-0wZ1IRqGGhMP76gLqz8EyfBXKk0J2qo2+H3fi4mcUP/KtTocoX08nmIAHl1Z2kJIZbZee8KOpBCSNPRgauucjw==}
 
@@ -4570,7 +4551,7 @@ snapshots:
       '@better-auth/utils': 0.3.0
       '@better-fetch/fetch': 1.1.21
       '@standard-schema/spec': 1.1.0
-      better-call: 1.1.5(zod@4.1.13)
+      better-call: 1.1.5(zod@4.2.1)
       jose: 6.1.3
       kysely: 0.28.9
       nanostores: 1.1.0
@@ -6134,15 +6115,6 @@ snapshots:
       react: 19.2.1
       react-dom: 19.2.1(react@19.2.1)
       solid-js: 1.9.10
-
-  better-call@1.1.5(zod@4.1.13):
-    dependencies:
-      '@better-auth/utils': 0.3.0
-      '@better-fetch/fetch': 1.1.21
-      rou3: 0.7.12
-      set-cookie-parser: 2.7.2
-    optionalDependencies:
-      zod: 4.1.13
 
   better-call@1.1.5(zod@4.2.1):
     dependencies:
@@ -8087,9 +8059,6 @@ snapshots:
   yoctocolors-cjs@2.1.3: {}
 
   zod@3.25.76: {}
-
-  zod@4.1.13:
-    optional: true
 
   zod@4.2.1: {}
 
