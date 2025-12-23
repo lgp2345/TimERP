@@ -22,9 +22,6 @@
     "typescript": "^5.9.3",
     "ultracite": "6.4.1"
   },
-  "dependencies": {
-    "zod": "^4.1.13"
-  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,jsonc,css,scss,md,mdx}": [
       "pnpm dlx ultracite fix"
