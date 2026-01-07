@@ -1,0 +1,27 @@
+{
+  "auth": {
+    "userName": {
+      "label": "Username",
+      "placeholder": "Enter your username",
+      "required": "Username is required"
+    },
+    "password": {
+      "label": "Password",
+      "placeholder": "Enter your password",
+      "required": "Password is required",
+      "rules": "Password format is incorrect",
+      "invalid": "Password must contain uppercase and lowercase letters and numbers, and be at least 8 characters long"
+    },
+    "login": {
+      "title": "Welcome",
+      "subtitle": "Please enter your login information",
+      "rememberMe": "Remember me",
+      "submit": "Login",
+      "failed": "Login failed"
+    }
+  },
+  "validation": {
+    "error": "Validation failed"
+  }
+}
+

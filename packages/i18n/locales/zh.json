@@ -1,0 +1,27 @@
+{
+  "auth": {
+    "userName": {
+      "label": "账号",
+      "placeholder": "请输入账号",
+      "required": "用户名不能为空"
+    },
+    "password": {
+      "label": "密码",
+      "placeholder": "请输入密码",
+      "required": "密码不能为空",
+      "rules": "密码格式不正确",
+      "invalid": "密码需包含大小写字母和数字，且长度不少于 8 位"
+    },
+    "login": {
+      "title": "欢迎登录",
+      "subtitle": "请输入您的登录信息",
+      "rememberMe": "记住我",
+      "submit": "登录",
+      "failed": "登录失败"
+    }
+  },
+  "validation": {
+    "error": "验证失败"
+  }
+}
+

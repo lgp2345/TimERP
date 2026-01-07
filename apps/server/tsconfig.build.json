@@ -4,7 +4,10 @@
     "declaration": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "paths": {
+      "@repo/schema": ["../../packages/schema/index.ts"]
+    }
   },
   "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
 }

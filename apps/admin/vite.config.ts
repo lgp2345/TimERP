@@ -22,6 +22,9 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    exclude: ["@repo/schema"],
+  },
   server: {
     port: 5173,
   },

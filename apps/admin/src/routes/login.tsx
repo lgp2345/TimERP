@@ -1,56 +1,84 @@
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
+import { ZodError } from "zod";
 import { Building2, Lock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { loginRequestSchema } from "@repo/schema";
 import { useAppStore } from "@/store/useAppStore";
 
 export const Route = createFileRoute("/login")({ component: Login });
 
 function Login() {
+  const { t } = useTranslation();
   const setAccessToken = useAppStore((s) => s.setAccessToken);
 
   const form = useForm({
     defaultValues: {
-      username: "",
+      userName: "",
       password: "",
       rememberMe: false,
     },
     onSubmit: async ({ value }) => {
-      const res = await fetch("/auth/login", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          username: value.username,
+      try {
+        const validated = loginRequestSchema.parse({
+          userName: value.userName,
           password: value.password,
-        }),
-      });
+        });
 
-      if (!res.ok) throw new Error("登录失败");
-      const data: unknown = await res.json();
-      const accessToken =
-        typeof (data as { accessToken?: unknown }).accessToken === "string"
-          ? (data as { accessToken: string }).accessToken
-          : null;
-      if (!accessToken) throw new Error("登录失败");
+        const res = await fetch("/auth/login", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(validated),
+        });
 
-      setAccessToken(accessToken, value.rememberMe ? "local" : "session");
+        if (!res.ok) {
+          const error = await res.json().catch(() => ({}));
+          throw new Error(
+            typeof error.message === "string" ? error.message : t("auth.login.failed")
+          );
+        }
+
+        const data: unknown = await res.json();
+        const accessToken =
+          typeof (data as { accessToken?: unknown }).accessToken === "string"
+            ? (data as { accessToken: string }).accessToken
+            : null;
+        if (!accessToken) throw new Error(t("auth.login.failed"));
+
+        setAccessToken(accessToken, value.rememberMe ? "local" : "session");
+      } catch (error: unknown) {
+        if (error instanceof ZodError) {
+          const firstError = error.issues[0];
+          if (firstError) {
+            const field = firstError.path[0] as "userName" | "password";
+            const message = t(firstError.message);
+            form.setFieldMeta(field, (prev) => ({
+              ...prev,
+              errors: [message],
+            }));
+          }
+          return;
+        }
+        throw error;
+      }
     },
   });
 
   return (
-    <div className="xl:justify-end-safe flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="xl:justify-end-safe flex min-h-screen items-center justify-center bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="w-full max-w-md xl:mr-20">
         <div className="space-y-8 rounded-2xl border border-border/50 bg-card p-8 shadow-2xl backdrop-blur-sm">
           <div className="space-y-2 text-center">
             <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
               <Building2 className="h-8 w-8 text-primary" />
             </div>
-            <h1 className="font-bold text-3xl tracking-tight">欢迎登录</h1>
-            <p className="text-muted-foreground">请输入您的登录信息</p>
+            <h1 className="font-bold text-3xl tracking-tight">{t("auth.login.title")}</h1>
+            <p className="text-muted-foreground">{t("auth.login.subtitle")}</p>
           </div>
 
           <form
@@ -62,14 +90,24 @@ function Login() {
             }}
           >
             <form.Field
-              name="username"
+              name="userName"
               validators={{
-                onChange: ({ value }) => (value ? undefined : "账号不能为空"),
+                onChange: ({ value }) => {
+                  try {
+                    loginRequestSchema.shape.userName.parse(value);
+                    return undefined;
+                  } catch (error: unknown) {
+                    if (error instanceof ZodError) {
+                      return t(error.errors[0]?.message ?? "validation.error");
+                    }
+                    return t("auth.userName.required");
+                  }
+                },
               }}
             >
               {(field) => (
                 <div className="space-y-2">
-                  <Label htmlFor={field.name}>账号</Label>
+                  <Label htmlFor={field.name}>{t("auth.userName.label")}</Label>
                   <div className="relative">
                     <User className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -78,7 +116,7 @@ function Login() {
                       name={field.name}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder="请输入账号"
+                      placeholder={t("auth.userName.placeholder")}
                       value={field.state.value}
                     />
                   </div>
@@ -94,12 +132,22 @@ function Login() {
             <form.Field
               name="password"
               validators={{
-                onChange: ({ value }) => (value ? undefined : "密码不能为空"),
+                onChange: ({ value }) => {
+                  try {
+                    loginRequestSchema.shape.password.parse(value);
+                    return undefined;
+                  } catch (error: unknown) {
+                    if (error instanceof ZodError) {
+                      return t(error.errors[0]?.message ?? "validation.error");
+                    }
+                    return t("auth.password.invalid");
+                  }
+                },
               }}
             >
               {(field) => (
                 <div className="space-y-2">
-                  <Label htmlFor={field.name}>密码</Label>
+                  <Label htmlFor={field.name}>{t("auth.password.label")}</Label>
                   <div className="relative">
                     <Lock className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -108,7 +156,7 @@ function Login() {
                       name={field.name}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder="请输入密码"
+                      placeholder={t("auth.password.placeholder")}
                       type="password"
                       value={field.state.value}
                     />
@@ -136,7 +184,7 @@ function Login() {
                     className="cursor-pointer font-normal text-sm"
                     htmlFor={field.name}
                   >
-                    记住我
+                    {t("auth.login.rememberMe")}
                   </Label>
                 </div>
               )}
@@ -146,7 +194,7 @@ function Login() {
               className="h-11 w-full font-semibold text-base"
               type="submit"
             >
-              登录
+              {t("auth.login.submit")}
             </Button>
           </form>
         </div>

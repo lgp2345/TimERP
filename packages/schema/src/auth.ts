@@ -1,8 +1,11 @@
 import { z } from "zod";
 
 export const loginRequestSchema = z.object({
-  username: z.string().min(1),
-  password: z.string().min(1),
+  userName: z.string().trim().min(1, "auth.userName.required"),
+  password: z.string().trim().min(1, "auth.password.required").regex(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/,
+    "auth.password.rules"
+  ),
 });
 
 export type LoginRequest = z.infer<typeof loginRequestSchema>;
