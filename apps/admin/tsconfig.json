@@ -1,7 +1,7 @@
 {
   "extends": "@repo/config/typescript/base",
-  "strict": true,
   "compilerOptions": {
+    "strict": true,
     "baseUrl": "./",
     "outDir": "./dist",
     "paths": {

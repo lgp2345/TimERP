@@ -4,9 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./zh": "./locales/zh.json",
-    "./en": "./locales/en.json"
-  },
-  "files": ["locales"]
+    "./zh": "./src/zh.json",
+    "./en": "./src/en.json"
+  }
 }
 

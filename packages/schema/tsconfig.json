@@ -1,14 +1,16 @@
 {
-  "extends": "@repo/config/typescript/base",
   "compilerOptions": {
     "rootDir": "./",
     "outDir": "./dist",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "target": "ES2020"
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "ES2020",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true
   },
   "include": ["src", "index.ts"]
 }

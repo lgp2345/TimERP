@@ -5,9 +5,9 @@ import * as path from "node:path";
 const getI18nPath = () => {
   const cwd = process.cwd();
   if (cwd.endsWith("apps/server")) {
-    return path.join(cwd, "../../packages/i18n/locales/");
+    return path.join(cwd, "../../packages/i18n/src/");
   }
-  return path.join(cwd, "packages/i18n/locales/");
+  return path.join(cwd, "packages/i18n/src/");
 };
 
 @Module({

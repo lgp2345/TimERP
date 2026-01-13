@@ -28,7 +28,7 @@ type AuthModuleOptions = {
  * 创建 Redis 客户端
  */
 function createRedisClient(redisUrl: string): RedisLike {
-  return new IORedis(redisUrl);
+  return new IORedis(redisUrl) as unknown as RedisLike;
 }
 
 /**

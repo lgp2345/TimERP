@@ -1,5 +1,5 @@
 {
-  "name": "@timmerp/api",
+  "name": "@timmerp/server",
   "version": "0.1.0",
   "private": true,
   "type": "commonjs",
