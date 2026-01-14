@@ -1,5 +1,5 @@
-import { type JwtClaims } from "@repo/schema";
-import { type TenantContext } from "@repo/auth";
+import type { TenantContext } from "@repo/auth";
+import type { JwtClaims } from "@repo/schema";
 
 /**
  * 扩展的请求类型，用于 NestJS/Fastify
@@ -11,4 +11,3 @@ export type TenantRequest = {
   user?: JwtClaims;
   raw?: Record<string, unknown>;
 };
-

@@ -1,4 +1,6 @@
-export function parseCookieHeader(cookieHeader: string | undefined): Record<string, string> {
+export function parseCookieHeader(
+  cookieHeader: string | undefined
+): Record<string, string> {
   if (!cookieHeader) return {};
 
   const out: Record<string, string> = {};
@@ -24,10 +26,10 @@ export function serializeCookie(args: {
   parts.push(`${args.name}=${encodeURIComponent(args.value)}`);
   parts.push(`Path=${args.path}`);
   parts.push(`Max-Age=${Math.floor(args.maxAgeSeconds)}`);
-  parts.push(`SameSite=${args.sameSite[0]?.toUpperCase()}${args.sameSite.slice(1)}`);
+  parts.push(
+    `SameSite=${args.sameSite[0]?.toUpperCase()}${args.sameSite.slice(1)}`
+  );
   if (args.httpOnly) parts.push("HttpOnly");
   if (args.secure) parts.push("Secure");
   return parts.join("; ");
 }
-
-

@@ -32,5 +32,3 @@ export type RedisLike = {
   set: (key: string, value: string, ...args: string[]) => Promise<unknown>;
   del: (...keys: string[]) => Promise<unknown>;
 };
-
-

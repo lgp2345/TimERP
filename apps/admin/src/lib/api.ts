@@ -12,5 +12,3 @@ export async function apiFetch(input: string, init?: RequestInit) {
     credentials: "include",
   });
 }
-
-

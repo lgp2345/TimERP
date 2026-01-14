@@ -4,7 +4,10 @@ type AppState = {
   initialized: boolean;
   setInitialized: (value: boolean) => void;
   accessToken: string | null;
-  setAccessToken: (token: string | null, persist: "session" | "local" | "none") => void;
+  setAccessToken: (
+    token: string | null,
+    persist: "session" | "local" | "none"
+  ) => void;
 };
 
 export const useAppStore = create<AppState>((set) => ({

@@ -1,17 +1,27 @@
-import { CanActivate, ForbiddenException, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
-import { Reflector } from "@nestjs/core";
-import { type Db } from "@repo/db";
-import { resolveUserPermissions, type AuthConfig, type RedisLike } from "@repo/auth";
+import {
+  type CanActivate,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common";
+import type { Reflector } from "@nestjs/core";
+import {
+  type AuthConfig,
+  type RedisLike,
+  resolveUserPermissions,
+} from "@repo/auth";
+import type { Db } from "@repo/db";
 import { REQUIRE_PERMISSIONS_KEY } from "./permissions.decorator";
+import type { TenantRequest } from "./request-types";
 import { AUTH_CONFIG, AUTH_DB, AUTH_REDIS } from "./tokens";
-import { type TenantRequest } from "./request-types";
 
 /**
  * RBAC（基于角色的访问控制）权限守卫
  * 检查用户是否拥有 @RequirePermissions 装饰器声明的所有权限
- * 
+ *
  * 注意：此守卫需要在 AuthGuard 之后执行，以确保请求中已有用户信息
- * 
+ *
  * 使用方式：
  * ```typescript
  * @UseGuards(AuthGuard, RbacGuard)
@@ -31,10 +41,10 @@ export class RbacGuard implements CanActivate {
 
   async canActivate(context: Parameters<CanActivate["canActivate"]>[0]) {
     // 从方法或类上获取所需的权限列表
-    const required = this.reflector.getAllAndOverride<string[]>(REQUIRE_PERMISSIONS_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const required = this.reflector.getAllAndOverride<string[]>(
+      REQUIRE_PERMISSIONS_KEY,
+      [context.getHandler(), context.getClass()]
+    );
     // 如果没有声明权限要求，则允许访问
     if (!required || required.length === 0) return true;
 
@@ -57,4 +67,3 @@ export class RbacGuard implements CanActivate {
     return true;
   }
 }
-

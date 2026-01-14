@@ -13,5 +13,3 @@ export function createPgPool(config: PoolConfig): Pool {
 export function createDb(pool: Pool): Db {
   return drizzle(pool, { schema });
 }
-
-

@@ -1,13 +1,18 @@
-import { Module, type DynamicModule, type MiddlewareConsumer, type NestModule } from "@nestjs/common";
+import {
+  type DynamicModule,
+  type MiddlewareConsumer,
+  Module,
+  type NestModule,
+} from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import type { AuthConfig, RedisLike } from "@repo/auth";
 import { createDb, createPgPool, type Db } from "@repo/db";
 import IORedis from "ioredis";
-import { type RedisLike, type AuthConfig } from "@repo/auth";
-import { AUTH_CONFIG, AUTH_DB, AUTH_REDIS } from "./tokens";
-import { TenantMiddleware } from "./tenant.middleware";
 import { AuthController } from "./auth.controller";
 import { AuthGuard } from "./auth.guard";
 import { RbacGuard } from "./rbac.guard";
+import { TenantMiddleware } from "./tenant.middleware";
+import { AUTH_CONFIG, AUTH_DB, AUTH_REDIS } from "./tokens";
 
 /**
  * 认证模块配置选项
@@ -33,13 +38,13 @@ function createRedisClient(redisUrl: string): RedisLike {
 
 /**
  * NestJS 认证模块
- * 
+ *
  * 功能：
  * - 配置依赖注入：数据库、Redis、认证配置
  * - 注册控制器：AuthController（登录/刷新/登出）
  * - 注册守卫：AuthGuard（JWT 认证）、RbacGuard（权限检查）
  * - 注册中间件：TenantMiddleware（租户解析）
- * 
+ *
  * 使用方式：
  * ```typescript
  * @Module({
@@ -75,7 +80,7 @@ export class AuthModule implements NestModule {
     // 创建数据库连接池和 Drizzle 实例
     const pool = createPgPool({ connectionString: options.databaseUrl });
     const db: Db = createDb(pool);
-    
+
     // 创建 Redis 客户端
     const redis: RedisLike = createRedisClient(options.redisUrl);
 
@@ -104,4 +109,3 @@ export class AuthModule implements NestModule {
     consumer.apply(TenantMiddleware).forRoutes("*");
   }
 }
-

@@ -10,5 +10,3 @@ export const companyDomains = pgTable("company_domains", {
   isPrimary: boolean("is_primary").notNull().default(false),
   status: text("status").notNull().default("active"),
 });
-
-

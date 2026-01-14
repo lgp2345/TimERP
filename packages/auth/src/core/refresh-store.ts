@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import { type RedisLike } from "./types";
+import type { RedisLike } from "./types";
 
 type RefreshRecord = {
   userId: string;
@@ -15,7 +15,11 @@ function refreshKey(token: string): string {
   return `rt:${sha256(token)}`;
 }
 
-function familyKey(companyId: string, userId: string, familyId: string): string {
+function familyKey(
+  companyId: string,
+  userId: string,
+  familyId: string
+): string {
   return `rtf:${companyId}:${userId}:${familyId}`;
 }
 
@@ -24,17 +28,30 @@ export function generateRefreshToken(): string {
 }
 
 export type RefreshTokenStore = {
-  issue: (args: { userId: string; companyId: string }) => Promise<{ token: string; familyId: string }>;
-  rotate: (args: { token: string; companyId: string }) => Promise<{ token: string; userId: string; familyId: string } | null>;
+  issue: (args: {
+    userId: string;
+    companyId: string;
+  }) => Promise<{ token: string; familyId: string }>;
+  rotate: (args: {
+    token: string;
+    companyId: string;
+  }) => Promise<{ token: string; userId: string; familyId: string } | null>;
   revoke: (args: { token: string }) => Promise<void>;
 };
 
-export function createRedisRefreshTokenStore(redis: RedisLike, ttlSeconds: number): RefreshTokenStore {
+export function createRedisRefreshTokenStore(
+  redis: RedisLike,
+  ttlSeconds: number
+): RefreshTokenStore {
   return {
     async issue(args) {
       const token = generateRefreshToken();
       const familyId = randomBytes(16).toString("hex");
-      const record: RefreshRecord = { userId: args.userId, companyId: args.companyId, familyId };
+      const record: RefreshRecord = {
+        userId: args.userId,
+        companyId: args.companyId,
+        familyId,
+      };
 
       const rKey = refreshKey(token);
       const fKey = familyKey(args.companyId, args.userId, familyId);
@@ -64,10 +81,19 @@ export function createRedisRefreshTokenStore(redis: RedisLike, ttlSeconds: numbe
       const fKey = familyKey(record.companyId, record.userId, record.familyId);
 
       await redis.del(oldKey);
-      await redis.set(newKey, JSON.stringify(newRecord), "EX", String(ttlSeconds));
+      await redis.set(
+        newKey,
+        JSON.stringify(newRecord),
+        "EX",
+        String(ttlSeconds)
+      );
       await redis.set(fKey, newKey, "EX", String(ttlSeconds));
 
-      return { token: newToken, userId: record.userId, familyId: record.familyId };
+      return {
+        token: newToken,
+        userId: record.userId,
+        familyId: record.familyId,
+      };
     },
 
     async revoke(args) {
@@ -75,5 +101,3 @@ export function createRedisRefreshTokenStore(redis: RedisLike, ttlSeconds: numbe
     },
   };
 }
-
-

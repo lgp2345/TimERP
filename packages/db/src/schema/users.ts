@@ -6,5 +6,3 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash").notNull(),
   displayName: text("display_name"),
 });
-
-

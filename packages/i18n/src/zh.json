@@ -1,5 +1,10 @@
 {
   "auth": {
+    "companyCode": {
+      "label": "公司编码",
+      "placeholder": "请输入公司编码",
+      "required": "公司编码不能为空"
+    },
     "userName": {
       "label": "账号",
       "placeholder": "请输入账号",
@@ -24,4 +29,3 @@
     "error": "验证失败"
   }
 }
-

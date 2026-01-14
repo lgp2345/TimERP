@@ -1,14 +1,17 @@
-import { eq } from "drizzle-orm";
 import { type Db, schema } from "@repo/db";
+import { eq } from "drizzle-orm";
 
 export function normalizeHost(hostHeader: string | undefined): string | null {
   if (!hostHeader) return null;
   const host = hostHeader.split(",")[0]?.trim() ?? "";
-  const withoutPort = host.includes(":") ? host.split(":")[0] ?? "" : host;
+  const withoutPort = host.includes(":") ? (host.split(":")[0] ?? "") : host;
   return withoutPort.trim() ? withoutPort.trim().toLowerCase() : null;
 }
 
-export async function resolveTenantFromHost(db: Db, hostHeader: string | undefined) {
+export async function resolveTenantFromHost(
+  db: Db,
+  hostHeader: string | undefined
+) {
   const host = normalizeHost(hostHeader);
   if (!host) return null;
 
@@ -23,5 +26,3 @@ export async function resolveTenantFromHost(db: Db, hostHeader: string | undefin
 
   return { companyId, host };
 }
-
-

@@ -1,6 +1,10 @@
-import { Module } from "@nestjs/common";
-import { I18nModule as NestI18nModule, AcceptLanguageResolver, I18nJsonLoader } from "nestjs-i18n";
 import * as path from "node:path";
+import { Module } from "@nestjs/common";
+import {
+  AcceptLanguageResolver,
+  I18nJsonLoader,
+  I18nModule as NestI18nModule,
+} from "nestjs-i18n";
 
 const getI18nPath = () => {
   const cwd = process.cwd();
@@ -24,4 +28,3 @@ const getI18nPath = () => {
   ],
 })
 export class I18nModule {}
-

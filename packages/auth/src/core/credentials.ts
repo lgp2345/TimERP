@@ -1,5 +1,5 @@
-import { and, eq } from "drizzle-orm";
 import { type Db, schema } from "@repo/db";
+import { and, eq } from "drizzle-orm";
 import { verifyPassword } from "./password";
 
 export async function verifyTenantCredentials(args: {
@@ -25,8 +25,8 @@ export async function verifyTenantCredentials(args: {
       and(
         eq(schema.memberships.userId, user.id),
         eq(schema.memberships.companyId, args.companyId),
-        eq(schema.memberships.status, "active"),
-      ),
+        eq(schema.memberships.status, "active")
+      )
     )
     .limit(1);
 
@@ -35,5 +35,3 @@ export async function verifyTenantCredentials(args: {
 
   return { userId: user.id };
 }
-
-

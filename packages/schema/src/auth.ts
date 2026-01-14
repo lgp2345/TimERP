@@ -1,11 +1,16 @@
 import { z } from "zod";
 
 export const loginRequestSchema = z.object({
-  userName: z.string().trim().min(1, "auth.userName.required"),
-  password: z.string().trim().min(1, "auth.password.required").regex(
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/,
-    "auth.password.rules"
-  ),
+  companyCode: z.string().trim().min(4, "auth.companyCode.required"),
+  userName: z.string().trim().min(2, "auth.userName.required"),
+  password: z
+    .string()
+    .trim()
+    .min(8, "auth.password.required")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/,
+      "auth.password.rules"
+    ),
 });
 
 export type LoginRequest = z.infer<typeof loginRequestSchema>;
@@ -23,5 +28,3 @@ export const jwtClaimsSchema = z.object({
 });
 
 export type JwtClaims = z.infer<typeof jwtClaimsSchema>;
-
-

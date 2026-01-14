@@ -7,7 +7,7 @@
     "access": "public"
   },
   "exports": {
-    "./typescript/base": "./typescript/base.json",
-    "./typescript/nestjs": "./typescript/nestjs.json"
+    "./typescript/base": "./src/typescript/base.json",
+    "./typescript/nestjs": "./src/typescript/nestjs.json"
   }
 }

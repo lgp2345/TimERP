@@ -1,13 +1,13 @@
+import { loginRequestSchema } from "@repo/schema";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
+import { Building2, Lock, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { ZodError } from "zod";
-import { Building2, Lock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { loginRequestSchema } from "@repo/schema";
 import { useAppStore } from "@/store/useAppStore";
 
 export const Route = createFileRoute("/login")({ component: Login });
@@ -18,6 +18,7 @@ function Login() {
 
   const form = useForm({
     defaultValues: {
+      companyCode: "",
       userName: "",
       password: "",
       rememberMe: false,
@@ -25,6 +26,7 @@ function Login() {
     onSubmit: async ({ value }) => {
       try {
         const validated = loginRequestSchema.parse({
+          companyCode: value.companyCode,
           userName: value.userName,
           password: value.password,
         });
@@ -39,7 +41,9 @@ function Login() {
         if (!res.ok) {
           const error = await res.json().catch(() => ({}));
           throw new Error(
-            typeof error.message === "string" ? error.message : t("auth.login.failed")
+            typeof error.message === "string"
+              ? error.message
+              : t("auth.login.failed")
           );
         }
 
@@ -48,7 +52,9 @@ function Login() {
           typeof (data as { accessToken?: unknown }).accessToken === "string"
             ? (data as { accessToken: string }).accessToken
             : null;
-        if (!accessToken) throw new Error(t("auth.login.failed"));
+        if (!accessToken) {
+          throw new Error(t("auth.login.failed"));
+        }
 
         setAccessToken(accessToken, value.rememberMe ? "local" : "session");
       } catch (error: unknown) {
@@ -77,7 +83,9 @@ function Login() {
             <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
               <Building2 className="h-8 w-8 text-primary" />
             </div>
-            <h1 className="font-bold text-3xl tracking-tight">{t("auth.login.title")}</h1>
+            <h1 className="font-bold text-3xl tracking-tight">
+              {t("auth.login.title")}
+            </h1>
             <p className="text-muted-foreground">{t("auth.login.subtitle")}</p>
           </div>
 
@@ -90,12 +98,53 @@ function Login() {
             }}
           >
             <form.Field
+              name="companyCode"
+              validators={{
+                onChange: ({ value }) => {
+                  try {
+                    loginRequestSchema.shape.companyCode.parse(value);
+                    return;
+                  } catch (error: unknown) {
+                    if (error instanceof ZodError) {
+                      return t(error.errors[0]?.message ?? "validation.error");
+                    }
+                    return t("auth.companyCode.required");
+                  }
+                },
+              }}
+            >
+              {(field) => (
+                <div className="relative">
+                  <Label htmlFor={field.name}>
+                    {t("auth.companyCode.label")}
+                  </Label>
+                  <div className="relative mt-2">
+                    <Building2 className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      className="pl-10"
+                      id={field.name}
+                      name={field.name}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      placeholder={t("auth.companyCode.placeholder")}
+                      value={field.state.value}
+                    />
+                  </div>
+                  {field.state.meta.errors?.[0] ? (
+                    <p className="absolute top-full mt-1 text-destructive text-sm">
+                      {field.state.meta.errors[0]}
+                    </p>
+                  ) : null}
+                </div>
+              )}
+            </form.Field>
+            <form.Field
               name="userName"
               validators={{
                 onChange: ({ value }) => {
                   try {
                     loginRequestSchema.shape.userName.parse(value);
-                    return undefined;
+                    return;
                   } catch (error: unknown) {
                     if (error instanceof ZodError) {
                       return t(error.errors[0]?.message ?? "validation.error");
@@ -106,10 +155,10 @@ function Login() {
               }}
             >
               {(field) => (
-                <div className="space-y-2">
+                <div className="relative">
                   <Label htmlFor={field.name}>{t("auth.userName.label")}</Label>
-                  <div className="relative">
-                    <User className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
+                  <div className="relative mt-2">
+                    <User className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       className="pl-10"
                       id={field.name}
@@ -120,11 +169,11 @@ function Login() {
                       value={field.state.value}
                     />
                   </div>
-                  {field.state.meta.errors && (
-                    <p className="text-destructive text-sm">
+                  {field.state.meta.errors?.[0] ? (
+                    <p className="absolute top-full mt-1 text-destructive text-sm">
                       {field.state.meta.errors[0]}
                     </p>
-                  )}
+                  ) : null}
                 </div>
               )}
             </form.Field>
@@ -135,7 +184,7 @@ function Login() {
                 onChange: ({ value }) => {
                   try {
                     loginRequestSchema.shape.password.parse(value);
-                    return undefined;
+                    return;
                   } catch (error: unknown) {
                     if (error instanceof ZodError) {
                       return t(error.errors[0]?.message ?? "validation.error");
@@ -146,10 +195,10 @@ function Login() {
               }}
             >
               {(field) => (
-                <div className="space-y-2">
+                <div className="relative">
                   <Label htmlFor={field.name}>{t("auth.password.label")}</Label>
-                  <div className="relative">
-                    <Lock className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
+                  <div className="relative mt-2">
+                    <Lock className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       className="pl-10"
                       id={field.name}
@@ -161,11 +210,11 @@ function Login() {
                       value={field.state.value}
                     />
                   </div>
-                  {field.state.meta.errors && (
-                    <p className="text-destructive text-sm">
+                  {field.state.meta.errors?.[0] ? (
+                    <p className="absolute top-full mt-1 text-destructive text-sm">
                       {field.state.meta.errors[0]}
                     </p>
-                  )}
+                  ) : null}
                 </div>
               )}
             </form.Field>
@@ -191,7 +240,7 @@ function Login() {
             </form.Field>
 
             <Button
-              className="h-11 w-full font-semibold text-base"
+              className="h-11 w-full cursor-pointer font-semibold text-base"
               type="submit"
             >
               {t("auth.login.submit")}

@@ -1,8 +1,13 @@
-import { CanActivate, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
-import { type JwtClaims } from "@repo/schema";
-import { verifyAccessToken, type AuthConfig } from "@repo/auth";
+import {
+  type CanActivate,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common";
+import { type AuthConfig, verifyAccessToken } from "@repo/auth";
+import type { JwtClaims } from "@repo/schema";
+import type { TenantRequest } from "./request-types";
 import { AUTH_CONFIG } from "./tokens";
-import { type TenantRequest } from "./request-types";
 
 /**
  * 从请求头中提取 Bearer Token
@@ -19,7 +24,7 @@ function extractBearer(req: TenantRequest): string | null {
 /**
  * JWT 认证守卫
  * 验证请求中的 Bearer Token，解析 JWT 并将用户声明附加到请求对象上
- * 
+ *
  * 使用方式：
  * ```typescript
  * @UseGuards(AuthGuard)
@@ -47,4 +52,3 @@ export class AuthGuard implements CanActivate {
     return true;
   }
 }
-

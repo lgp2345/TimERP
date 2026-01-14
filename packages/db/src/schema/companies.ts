@@ -5,5 +5,3 @@ export const companies = pgTable("companies", {
   code: text("code").notNull().unique(),
   name: text("name").notNull(),
 });
-
-

@@ -31,5 +31,3 @@ export function verifyPassword(password: string, encodedHash: string): boolean {
   if (expected.length !== computed.length) return false;
   return timingSafeEqual(expected, computed);
 }
-
-
