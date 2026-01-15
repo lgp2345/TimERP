@@ -1,4 +1,14 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "extends": ["ultracite/core", "ultracite/react", "ultracite/remix"]
+  "extends": ["ultracite/core", "ultracite/react", "ultracite/remix"],
+  "linter": {
+    "rules": {
+      "style": {
+        "noExportedImports": "warn"
+      },
+      "nursery": {
+        "useSortedClasses": "off"
+      }
+    }
+  }
 }
