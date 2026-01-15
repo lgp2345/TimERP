@@ -1,21 +1,29 @@
 import type { z } from "zod";
 import { useAppStore } from "@/store/useAppStore";
 
-type RequestConfig = {
+type RequestConfig<TSchema extends z.ZodType | undefined = undefined> = {
   url: string;
   method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   params?: Record<string, string | number | boolean | undefined | null>;
   data?: unknown;
   headers?: Record<string, string>;
-  schema?: z.ZodType;
+  schema?: TSchema;
 };
+
+type InferResponse<
+  TSchema extends z.ZodType | undefined,
+  TDefault = unknown,
+> = TSchema extends z.ZodType ? z.infer<TSchema> : TDefault;
 
 type Interceptor<T> = (value: T) => T | Promise<T>;
 
 class Request {
   private baseURL = "";
-  private readonly requestInterceptors: Interceptor<RequestConfig>[] = [];
+  private readonly requestInterceptors: Interceptor<
+    RequestConfig<z.ZodType | undefined>
+  >[] = [];
   private readonly responseInterceptors: Interceptor<Response>[] = [];
+  private readonly pendingRequests = new Map<string, AbortController>();
 
   setBaseURL(url: string) {
     this.baseURL = url;
@@ -24,7 +32,7 @@ class Request {
 
   interceptors = {
     request: {
-      use: (interceptor: Interceptor<RequestConfig>) => {
+      use: (interceptor: Interceptor<RequestConfig<z.ZodType | undefined>>) => {
         this.requestInterceptors.push(interceptor);
       },
     },
@@ -35,55 +43,34 @@ class Request {
     },
   };
 
-  async request<T = unknown>(config: RequestConfig): Promise<T> {
-    let finalConfig = { ...config };
+  private getRequestKey(config: RequestConfig<z.ZodType | undefined>): string {
+    const { url, method = "GET", params, data } = config;
+    return JSON.stringify({ url, method, params, data });
+  }
 
-    for (const interceptor of this.requestInterceptors) {
-      finalConfig = await interceptor(finalConfig);
-    }
-
-    const {
-      url,
-      method = "GET",
-      params,
-      data,
-      headers = {},
-      schema,
-    } = finalConfig;
-
-    const token = useAppStore.getState().accessToken;
-    if (token) {
-      headers.authorization = `Bearer ${token}`;
-    }
-
+  private buildUrl(url: string, params?: RequestConfig["params"]): string {
     let finalUrl = this.baseURL + url;
-    if (params) {
-      const searchParams = new URLSearchParams();
-      for (const [key, value] of Object.entries(params)) {
-        if (value !== undefined && value !== null) {
-          searchParams.append(key, String(value));
-        }
-      }
-      const queryString = searchParams.toString();
-      if (queryString) {
-        finalUrl += `?${queryString}`;
-      }
+    if (!params) {
+      return finalUrl;
     }
 
-    let response = await fetch(finalUrl, {
-      method,
-      headers: {
-        "content-type": "application/json",
-        ...headers,
-      },
-      body: data ? JSON.stringify(data) : undefined,
-      credentials: "include",
-    });
-
-    for (const interceptor of this.responseInterceptors) {
-      response = await interceptor(response);
+    const searchParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
     }
+    const queryString = searchParams.toString();
+    if (queryString) {
+      finalUrl += `?${queryString}`;
+    }
+    return finalUrl;
+  }
 
+  private async processResponse(
+    response: Response,
+    schema?: z.ZodType
+  ): Promise<unknown> {
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
@@ -91,48 +78,133 @@ class Request {
     const json = await response.json();
 
     if (schema) {
-      return schema.parse(json) as T;
+      return schema.parse(json);
     }
 
-    return json as T;
+    return json;
   }
 
-  get<T = unknown>(
+  async request<
+    TSchema extends z.ZodType | undefined = undefined,
+    TDefault = unknown,
+  >(config: RequestConfig<TSchema>): Promise<InferResponse<TSchema, TDefault>> {
+    let finalConfig: RequestConfig<z.ZodType | undefined> = {
+      ...config,
+    } as RequestConfig<z.ZodType | undefined>;
+
+    for (const interceptor of this.requestInterceptors) {
+      finalConfig = await interceptor(finalConfig);
+    }
+
+    const requestKey = this.getRequestKey(finalConfig);
+    const existingController = this.pendingRequests.get(requestKey);
+    if (existingController) {
+      existingController.abort();
+    }
+
+    const abortController = new AbortController();
+    this.pendingRequests.set(requestKey, abortController);
+
+    try {
+      const {
+        url,
+        method = "GET",
+        params,
+        data,
+        headers = {},
+        schema,
+      } = finalConfig;
+
+      const token = useAppStore.getState().accessToken;
+      if (token) {
+        headers.authorization = `Bearer ${token}`;
+      }
+
+      const finalUrl = this.buildUrl(url, params);
+
+      let response = await fetch(finalUrl, {
+        method,
+        headers: {
+          "content-type": "application/json",
+          ...headers,
+        },
+        body: data ? JSON.stringify(data) : undefined,
+        credentials: "include",
+        signal: abortController.signal,
+      });
+
+      for (const interceptor of this.responseInterceptors) {
+        response = await interceptor(response);
+      }
+
+      return (await this.processResponse(response, schema)) as InferResponse<
+        TSchema,
+        TDefault
+      >;
+    } finally {
+      this.pendingRequests.delete(requestKey);
+    }
+  }
+
+  get<TSchema extends z.ZodType | undefined = undefined, TDefault = unknown>(
     url: string,
-    config?: Omit<RequestConfig, "url" | "method">
-  ) {
-    return this.request<T>({ ...config, url, method: "GET" });
+    config?: Omit<RequestConfig<TSchema>, "url" | "method">
+  ): Promise<InferResponse<TSchema, TDefault>> {
+    return this.request<TSchema, TDefault>({
+      ...config,
+      url,
+      method: "GET",
+    } as RequestConfig<TSchema>);
   }
 
-  post<T = unknown>(
+  post<TSchema extends z.ZodType | undefined = undefined, TDefault = unknown>(
     url: string,
     data?: unknown,
-    config?: Omit<RequestConfig, "url" | "method" | "data">
-  ) {
-    return this.request<T>({ ...config, url, method: "POST", data });
+    config?: Omit<RequestConfig<TSchema>, "url" | "method" | "data">
+  ): Promise<InferResponse<TSchema, TDefault>> {
+    return this.request<TSchema, TDefault>({
+      ...config,
+      url,
+      method: "POST",
+      data,
+    } as RequestConfig<TSchema>);
   }
 
-  put<T = unknown>(
+  put<TSchema extends z.ZodType | undefined = undefined, TDefault = unknown>(
     url: string,
     data?: unknown,
-    config?: Omit<RequestConfig, "url" | "method" | "data">
-  ) {
-    return this.request<T>({ ...config, url, method: "PUT", data });
+    config?: Omit<RequestConfig<TSchema>, "url" | "method" | "data">
+  ): Promise<InferResponse<TSchema, TDefault>> {
+    return this.request<TSchema, TDefault>({
+      ...config,
+      url,
+      method: "PUT",
+      data,
+    } as RequestConfig<TSchema>);
   }
 
-  delete<T = unknown>(
+  delete<TSchema extends z.ZodType | undefined = undefined, TDefault = unknown>(
     url: string,
-    config?: Omit<RequestConfig, "url" | "method">
-  ) {
-    return this.request<T>({ ...config, url, method: "DELETE" });
+    config?: Omit<RequestConfig<TSchema>, "url" | "method">
+  ): Promise<InferResponse<TSchema, TDefault>> {
+    return this.request<TSchema, TDefault>({
+      ...config,
+      url,
+      method: "DELETE",
+    } as RequestConfig<TSchema>);
   }
 
-  patch<T = unknown>(
+  patch<TSchema extends z.ZodType | undefined = undefined, TDefault = unknown>(
     url: string,
     data?: unknown,
-    config?: Omit<RequestConfig, "url" | "method" | "data">
-  ) {
-    return this.request<T>({ ...config, url, method: "PATCH", data });
+    config?: Omit<RequestConfig<TSchema>, "url" | "method" | "data">
+  ): Promise<InferResponse<TSchema, TDefault>> {
+    return this.request<TSchema, TDefault>({
+      ...config,
+      url,
+      method: "PATCH",
+      data,
+    } as RequestConfig<TSchema>);
   }
 }
 
