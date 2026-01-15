@@ -1,13 +1,14 @@
 import { loginRequestSchema } from "@repo/schema";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
-import { Building2, Lock, User } from "lucide-react";
+import { Building2, Loader2, Lock, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { ZodError } from "zod";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLoginMutation } from "@/queries/user.query";
 import { useAppStore } from "@/store/useAppStore";
 
 export const Route = createFileRoute("/login")({ component: Login });
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/login")({ component: Login });
 function Login() {
   const { t } = useTranslation();
   const setAccessToken = useAppStore((s) => s.setAccessToken);
+  const { isPending, mutateAsync: loginMutationAsync } = useLoginMutation();
 
   const form = useForm({
     defaultValues: {
@@ -31,32 +33,12 @@ function Login() {
           password: value.password,
         });
 
-        const res = await fetch("/auth/login", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify(validated),
-        });
+        const data = await loginMutationAsync(validated);
 
-        if (!res.ok) {
-          const error = await res.json().catch(() => ({}));
-          throw new Error(
-            typeof error.message === "string"
-              ? error.message
-              : t("auth.login.failed")
-          );
-        }
-
-        const data: unknown = await res.json();
-        const accessToken =
-          typeof (data as { accessToken?: unknown }).accessToken === "string"
-            ? (data as { accessToken: string }).accessToken
-            : null;
-        if (!accessToken) {
-          throw new Error(t("auth.login.failed"));
-        }
-
-        setAccessToken(accessToken, value.rememberMe ? "local" : "session");
+        setAccessToken(
+          data.accessToken,
+          value.rememberMe ? "local" : "session"
+        );
       } catch (error: unknown) {
         if (error instanceof ZodError) {
           const firstError = error.issues[0];
@@ -70,7 +52,9 @@ function Login() {
           }
           return;
         }
-        throw error;
+        const errorMessage =
+          error instanceof Error ? error.message : t("auth.login.failed");
+        throw new Error(errorMessage);
       }
     },
   });
@@ -243,7 +227,11 @@ function Login() {
               className="h-11 w-full cursor-pointer font-semibold text-base"
               type="submit"
             >
-              {t("auth.login.submit")}
+              {isPending ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                t("auth.login.submit")
+              )}
             </Button>
           </form>
         </div>
