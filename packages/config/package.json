@@ -10,7 +10,10 @@
     "./typescript/base": "./src/typescript/base.json",
     "./typescript/nestjs": "./src/typescript/nestjs.json",
     "./typescript/packages": "./src/typescript/packages.json",
-    "./request": "./src/request/index.ts"
+    "./request": {
+      "types": "./src/request/index.ts",
+      "default": "./src/request/index.ts"
+    }
   },
   "typesVersions": {
     "*": {
