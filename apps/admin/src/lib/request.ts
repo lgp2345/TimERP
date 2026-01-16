@@ -1,3 +1,4 @@
+import { REQUEST_CONFIG } from "@repo/config/request";
 import type { z } from "zod";
 import { useAppStore } from "@/store/useAppStore";
 
@@ -18,7 +19,7 @@ type InferResponse<
 type Interceptor<T> = (value: T) => T | Promise<T>;
 
 class Request {
-  private baseURL = "";
+  private baseURL = import.meta.env.VITE_SERVER_HOST;
   private readonly requestInterceptors: Interceptor<
     RequestConfig<z.ZodType | undefined>
   >[] = [];
@@ -49,7 +50,7 @@ class Request {
   }
 
   private buildUrl(url: string, params?: RequestConfig["params"]): string {
-    let finalUrl = this.baseURL + url;
+    let finalUrl = `${this.baseURL}/${REQUEST_CONFIG.prefix}/${REQUEST_CONFIG.versionPrefix + REQUEST_CONFIG.version}${url}`;
     if (!params) {
       return finalUrl;
     }
