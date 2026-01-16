@@ -5,7 +5,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
-import type { Reflector } from "@nestjs/core";
+import { Reflector } from "@nestjs/core";
 import {
   type AuthConfig,
   type RedisLike,
@@ -32,12 +32,22 @@ import { AUTH_CONFIG, AUTH_DB, AUTH_REDIS } from "./tokens";
  */
 @Injectable()
 export class RbacGuard implements CanActivate {
+  private readonly reflector: Reflector;
+  private readonly db: Db;
+  private readonly redis: RedisLike | null;
+  private readonly config: AuthConfig;
+
   constructor(
-    private readonly reflector: Reflector,
-    @Inject(AUTH_DB) private readonly db: Db,
-    @Inject(AUTH_REDIS) private readonly redis: RedisLike | null,
-    @Inject(AUTH_CONFIG) private readonly config: AuthConfig,
-  ) {}
+    reflector: Reflector,
+    @Inject(AUTH_DB) db: Db,
+    @Inject(AUTH_REDIS) redis: RedisLike | null,
+    @Inject(AUTH_CONFIG) config: AuthConfig
+  ) {
+    this.reflector = reflector;
+    this.db = db;
+    this.redis = redis;
+    this.config = config;
+  }
 
   async canActivate(context: Parameters<CanActivate["canActivate"]>[0]) {
     // 从方法或类上获取所需的权限列表

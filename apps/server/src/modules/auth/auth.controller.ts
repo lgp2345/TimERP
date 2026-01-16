@@ -9,18 +9,18 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import {
-  type AuthConfig,
+  AuthConfig,
   createRedisRefreshTokenStore,
   issueAccessToken,
   parseCookieHeader,
-  type RedisLike,
+  RedisLike,
   serializeCookie,
   verifyTenantCredentials,
 } from "@repo/auth";
-import type { Db } from "@repo/db";
-import { loginRequestSchema } from "@repo/schema";
+import { Db } from "@repo/db";
+import { type LoginRequest, loginRequestSchema } from "@repo/schema";
 import type { FastifyReply } from "fastify";
-import type { I18nService } from "nestjs-i18n";
+import { I18nService } from "nestjs-i18n";
 import { ZodError } from "zod";
 import type { TenantRequest } from "./request-types";
 import { AUTH_CONFIG, AUTH_DB, AUTH_REDIS } from "./tokens";
@@ -39,7 +39,7 @@ export class AuthController {
     @Inject(AUTH_DB) private readonly db: Db,
     @Inject(AUTH_REDIS) private readonly redis: RedisLike,
     @Inject(AUTH_CONFIG) private readonly config: AuthConfig,
-    private readonly i18n: I18nService,
+    private readonly i18n: I18nService
   ) {}
 
   /**
@@ -58,11 +58,14 @@ export class AuthController {
     @Body() body: unknown
   ) {
     const tenant = req.tenant;
-    if (!tenant) throw new UnauthorizedException();
+    if (!tenant) {
+      throw new UnauthorizedException();
+    }
 
-    let input;
+    let input: LoginRequest;
     try {
-      input = loginRequestSchema.parse(body);
+      input = loginRequestSchema.parse(body) as LoginRequest;
+      console.log(input);
     } catch (error) {
       if (error instanceof ZodError) {
         const message = this.i18n.t(
@@ -76,7 +79,7 @@ export class AuthController {
     const verified = await verifyTenantCredentials({
       db: this.db,
       companyId: tenant.companyId,
-      username: input.username,
+      username: input.userName,
       password: input.password,
     });
     if (!verified) throw new UnauthorizedException();
