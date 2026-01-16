@@ -1,16 +1,8 @@
 {
+  "extends": "@repo/config/typescript/packages",
   "compilerOptions": {
     "rootDir": "./",
-    "outDir": "./dist",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "target": "ES2020",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "strict": true
+    "outDir": "./dist"
   },
   "include": ["src", "index.ts"]
 }

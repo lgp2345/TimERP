@@ -8,6 +8,24 @@
   },
   "exports": {
     "./typescript/base": "./src/typescript/base.json",
-    "./typescript/nestjs": "./src/typescript/nestjs.json"
+    "./typescript/nestjs": "./src/typescript/nestjs.json",
+    "./typescript/packages": "./src/typescript/packages.json",
+    "./request": "./src/request/index.ts"
+  },
+  "typesVersions": {
+    "*": {
+      "request": [
+        "./src/request/index.ts"
+      ]
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "lint": "biome check ."
   }
 }

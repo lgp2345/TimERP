@@ -7,7 +7,7 @@
     "forceConsistentCasingInFileNames": false,
     "incremental": true,
     "module": "commonjs",
-    "moduleResolution": "node",
+    "moduleResolution": "node10",
     "noFallthroughCasesInSwitch": false,
     "noImplicitAny": false,
     "removeComments": true,

@@ -1,23 +1,10 @@
 {
-  "extends": "@repo/config/typescript/base",
+  "extends": "@repo/config/typescript/packages",
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
-    "allowSyntheticDefaultImports": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "forceConsistentCasingInFileNames": false,
-    "incremental": true,
-    "module": "commonjs",
-    "moduleResolution": "Node10",
-    "noFallthroughCasesInSwitch": false,
-    "noImplicitAny": false,
-    "removeComments": true,
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "strictNullChecks": false,
-    "strictBindCallApply": false,
-    "types": ["node"]
+    "strict": false,
+    "strictNullChecks": false
   },
   "include": ["src"]
 }
