@@ -25,7 +25,7 @@ const pool = createPgPool({
 const db = createDb(pool);
 
 @Controller("auth")
-export class LoginController {
+export class AuthController {
   constructor(private readonly i18n: I18nService) {}
 
   @Post("login")

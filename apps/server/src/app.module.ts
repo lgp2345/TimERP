@@ -1,19 +1,13 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-import { AuthModule } from "@sapix/nestjs-better-auth-fastify";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-import { auth } from "./modules/auth/auth";
-import { LoginController } from "./modules/auth/login.controller";
+import { AuthModule } from "./modules/auth/auth.module";
 import { I18nModule } from "./modules/i18n";
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    I18nModule,
-    AuthModule.forRoot({ auth }),
-  ],
-  controllers: [AppController, LoginController],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), I18nModule, AuthModule],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
