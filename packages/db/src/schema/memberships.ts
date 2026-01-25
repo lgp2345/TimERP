@@ -1,6 +1,6 @@
 import { pgTable, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { users } from "./auth";
 import { companies } from "./companies";
-import { users } from "./users";
 
 export const memberships = pgTable(
   "memberships",

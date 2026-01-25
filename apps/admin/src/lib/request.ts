@@ -1,6 +1,5 @@
 import { REQUEST_CONFIG } from "@repo/config/request";
 import type { z } from "zod";
-import { useAppStore } from "@/store/useAppStore";
 
 type RequestConfig<TSchema extends z.ZodType | undefined = undefined> = {
   url: string;
@@ -115,11 +114,6 @@ class Request {
         headers = {},
         schema,
       } = finalConfig;
-
-      const token = useAppStore.getState().accessToken;
-      if (token) {
-        headers.authorization = `Bearer ${token}`;
-      }
 
       const finalUrl = this.buildUrl(url, params);
 

@@ -1,6 +1,6 @@
 import { loginRequestSchema } from "@repo/schema";
 import { useForm } from "@tanstack/react-form";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Building2, Loader2, Lock, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { ZodError } from "zod";
@@ -9,13 +9,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLoginMutation } from "@/queries/user.query";
-import { useAppStore } from "@/store/useAppStore";
 
 export const Route = createFileRoute("/login")({ component: Login });
 
 function Login() {
   const { t } = useTranslation();
-  const setAccessToken = useAppStore((s) => s.setAccessToken);
+  const navigate = useNavigate();
   const { isPending, mutateAsync: loginMutationAsync } = useLoginMutation();
 
   const form = useForm({
@@ -33,12 +32,9 @@ function Login() {
           password: value.password,
         });
 
-        const data = await loginMutationAsync(validated);
+        await loginMutationAsync(validated);
 
-        setAccessToken(
-          data.accessToken,
-          value.rememberMe ? "local" : "session"
-        );
+        navigate({ to: "/" });
       } catch (error: unknown) {
         if (error instanceof ZodError) {
           const firstError = error.issues[0];

@@ -5,8 +5,10 @@ import { request } from "@/lib/request";
 
 export const useLoginMutation = () =>
   useMutation({
-    mutationFn: (data: z.infer<typeof loginRequestSchema>) =>
-      request.post("/auth/login", data, {
+    mutationFn: async (data: z.infer<typeof loginRequestSchema>) => {
+      const response = await request.post("/auth/login", data, {
         schema: loginResponseSchema,
-      }),
+      });
+      return response;
+    },
   });

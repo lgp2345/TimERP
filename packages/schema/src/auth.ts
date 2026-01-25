@@ -13,7 +13,15 @@ export const loginRequestSchema = z.object({
 export type LoginRequest = z.infer<typeof loginRequestSchema>;
 
 export const loginResponseSchema = z.object({
-  accessToken: z.string().min(1),
+  user: z.object({
+    id: z.string(),
+    name: z.string().nullable(),
+    username: z.string().nullable(),
+    companyId: z.string(),
+    companyCode: z.string(),
+  }),
+  session: z.any().optional(),
+  cookies: z.string().optional(),
 });
 
 export type LoginResponse = z.infer<typeof loginResponseSchema>;
