@@ -1,6 +1,6 @@
 import { pgTable, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
-import { companies } from "./companies";
-import { memberships } from "./memberships";
+import { companies } from "./companies.schema";
+import { memberships } from "./memberships.schema";
 
 export const roles = pgTable(
   "roles",

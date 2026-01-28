@@ -1,13 +1,41 @@
-import { createDb, createPgPool } from "@repo/db";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { bearer, jwt, username } from "better-auth/plugins";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
+import {
+  accounts,
+  companies,
+  companyDomains,
+  membershipRoles,
+  memberships,
+  permissions,
+  rolePermissions,
+  roles,
+  sessions,
+  users,
+  verifications,
+} from "../../database/schema";
 
-const pool = createPgPool({
+const pool = new Pool({
   connectionString: process.env.DATABASE_URL ?? "",
 });
 
-const db = createDb(pool);
+const schema = {
+  accounts,
+  companies,
+  companyDomains,
+  memberships,
+  membershipRoles,
+  permissions,
+  rolePermissions,
+  roles,
+  sessions,
+  users,
+  verifications,
+};
+
+const db = drizzle(pool, { schema });
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {

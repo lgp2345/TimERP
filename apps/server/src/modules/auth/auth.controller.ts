@@ -5,28 +5,20 @@ import {
   Post,
   UnauthorizedException,
 } from "@nestjs/common";
-import {
-  companies,
-  createDb,
-  createPgPool,
-  memberships,
-  users,
-} from "@repo/db";
 import { type LoginRequest, loginRequestSchema } from "@repo/schema";
 import { and, eq, sql } from "drizzle-orm";
 import { I18nService } from "nestjs-i18n";
 import { ZodError } from "zod";
+import { DatabaseService } from "../../database/database.service";
+import { companies, memberships, users } from "../../database/schema";
 import { auth } from "./auth";
-
-const pool = createPgPool({
-  connectionString: process.env.DATABASE_URL ?? "",
-});
-
-const db = createDb(pool);
 
 @Controller("auth")
 export class AuthController {
-  constructor(private readonly i18n: I18nService) {}
+  constructor(
+    private readonly i18n: I18nService,
+    private readonly databaseService: DatabaseService
+  ) {}
 
   @Post("login")
   async login(@Body() body: unknown) {
@@ -42,6 +34,8 @@ export class AuthController {
       }
       throw error;
     }
+
+    const db = this.databaseService.db;
 
     const company = await db
       .select()
