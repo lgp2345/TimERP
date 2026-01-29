@@ -14,7 +14,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 
   constructor(private readonly configService: ConfigService) {}
 
-  async onModuleInit() {
+  onModuleInit() {
     const connectionString = this.configService.get<string>("DATABASE_URL");
     if (!connectionString) {
       throw new Error("DATABASE_URL is not defined");
