@@ -18,7 +18,8 @@
         "useSortedClasses": "off"
       },
       "performance": {
-        "noBarrelFile": "warn"
+        "noBarrelFile": "warn",
+        "noNamespaceImport": "warn"
       }
     }
   }
