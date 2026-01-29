@@ -4,6 +4,7 @@ build
 coverage
 .turbo
 .DS_Store
+.shared
 
 # Logs
 npm-debug.log*
