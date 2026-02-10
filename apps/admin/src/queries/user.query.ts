@@ -1,11 +1,10 @@
-import { type loginRequestSchema, loginResponseSchema } from "@repo/schema";
+import { type LoginRequest, loginResponseSchema } from "@repo/schema";
 import { useMutation } from "@tanstack/react-query";
-import type { z } from "zod";
 import { request } from "@/lib/request";
 
 export const useLoginMutation = () =>
   useMutation({
-    mutationFn: async (data: z.infer<typeof loginRequestSchema>) => {
+    mutationFn: async (data: LoginRequest) => {
       const response = await request.post("/auth/login", data, {
         schema: loginResponseSchema,
       });
