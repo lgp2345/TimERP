@@ -72,7 +72,20 @@ class Request {
     schema?: z.ZodType
   ): Promise<unknown> {
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      try {
+        const json = (await response.json()) as {
+          message?: string | string[];
+          error?: string;
+        };
+        const message = Array.isArray(json.message)
+          ? json.message[0]
+          : json.message;
+        errorMessage = message ?? json.error ?? errorMessage;
+      } catch {
+        // ignore json parse errors and keep fallback message
+      }
+      throw new Error(errorMessage);
     }
 
     const json = await response.json();
