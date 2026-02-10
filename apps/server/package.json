@@ -40,8 +40,10 @@
     "@nestjs/testing": "^11.1.6",
     "@repo/config": "workspace:*",
     "@types/node": "^22.7.4",
+    "@types/pg": "^8.16.0",
     "drizzle-kit": "^0.31.8",
     "ts-loader": "^9.5.4",
-    "tsconfig-paths": "^4.2.0"
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.21.0"
   }
 }
