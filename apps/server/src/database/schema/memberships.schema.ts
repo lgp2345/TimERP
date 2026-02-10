@@ -1,4 +1,5 @@
 import {
+  index,
   pgTable,
   text,
   timestamp,
@@ -18,28 +19,31 @@ export const memberships = pgTable(
     companyId: uuid("company_id")
       .notNull()
       .references(() => companies.id, { onDelete: "cascade" }),
-    account: text("account").notNull(),
-    password: text("password").notNull(),
+    memberNo: text("member_no"),
+    title: text("title"),
     status: text("status").notNull().default("active"),
+    joinedAt: timestamp("joined_at").notNull().defaultNow(),
+    invitedBy: uuid("invited_by").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    deactivatedAt: timestamp("deactivated_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
   (t) => ({
-    companyAccountUnique: uniqueIndex("membership_company_account_unique").on(
+    membershipUserCompanyUnique: uniqueIndex(
+      "membership_user_company_unique"
+    ).on(t.userId, t.companyId),
+    membershipCompanyMemberNoUnique: uniqueIndex(
+      "membership_company_member_no_unique"
+    ).on(t.companyId, t.memberNo),
+    membershipCompanyStatusIndex: index("membership_company_status_idx").on(
       t.companyId,
-      t.account
+      t.status
+    ),
+    membershipUserStatusIndex: index("membership_user_status_idx").on(
+      t.userId,
+      t.status
     ),
   })
 );
-
-export const sessions = pgTable("session", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  membershipId: uuid("membership_id")
-    .notNull()
-    .references(() => memberships.id, { onDelete: "cascade" }),
-  token: text("token").notNull().unique(),
-  expiresAt: timestamp("expires_at").notNull(),
-  ipAddress: text("ip_address"),
-  userAgent: text("user_agent"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});

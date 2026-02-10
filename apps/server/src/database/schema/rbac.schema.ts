@@ -1,4 +1,4 @@
-import { pgTable, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { boolean, pgTable, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { companies } from "./companies.schema";
 import { memberships } from "./memberships.schema";
 
@@ -9,9 +9,15 @@ export const roles = pgTable(
     companyId: uuid("company_id")
       .notNull()
       .references(() => companies.id, { onDelete: "cascade" }),
+    code: text("code").notNull(),
     name: text("name").notNull(),
+    isSystem: boolean("is_system").notNull().default(false),
   },
   (t) => ({
+    companyRoleCodeUnique: uniqueIndex("roles_company_code_unique").on(
+      t.companyId,
+      t.code
+    ),
     companyRoleNameUnique: uniqueIndex("roles_company_name_unique").on(
       t.companyId,
       t.name
@@ -22,6 +28,9 @@ export const roles = pgTable(
 export const permissions = pgTable("permissions", {
   id: uuid("id").defaultRandom().primaryKey(),
   code: text("code").notNull().unique(),
+  resource: text("resource").notNull(),
+  action: text("action").notNull(),
+  effect: text("effect").notNull().default("allow"),
   description: text("description"),
 });
 
