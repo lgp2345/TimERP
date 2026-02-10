@@ -264,6 +264,9 @@ export class AuthController {
     if (!user) {
       throw new UnauthorizedException("Invalid credentials");
     }
+    if (user.status !== "active") {
+      throw new UnauthorizedException("User is not active");
+    }
 
     const membership = await this.resolveMembership(user.id, company.id);
 

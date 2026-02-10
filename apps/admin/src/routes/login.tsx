@@ -1,4 +1,8 @@
-import { loginRequestSchema } from "@repo/schema";
+import {
+  type LoginRequest,
+  type LoginResponse,
+  loginRequestSchema,
+} from "@repo/schema";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
@@ -24,6 +28,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLoginMutation } from "@/queries/user.query";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export const Route = createFileRoute("/login")({ component: Login });
 
@@ -160,13 +165,9 @@ const createCaptchaFieldValidator =
 
 const submitLoginForm = async (params: {
   captchaCode: string;
-  loginMutationAsync: (payload: {
-    companyCode: string;
-    password: string;
-    userName: string;
-  }) => Promise<unknown>;
+  loginMutationAsync: (payload: LoginRequest) => Promise<LoginResponse>;
   onFieldError: (field: LoginFieldName, message: string) => void;
-  onSuccess: () => void;
+  onSuccess: (response: LoginResponse) => void;
   setCaptchaCode: (value: string) => void;
   t: TranslateFn;
   value: LoginSubmitValue;
@@ -197,11 +198,12 @@ const submitLoginForm = async (params: {
   try {
     const validated = loginRequestSchema.parse({
       companyCode: value.companyCode,
+      identifier: value.userName,
       userName: value.userName,
       password: value.password,
     });
-    await loginMutationAsync(validated);
-    onSuccess();
+    const response = await loginMutationAsync(validated);
+    onSuccess(response);
   } catch (error: unknown) {
     if (error instanceof ZodError) {
       const firstError = error.issues[0];
@@ -217,7 +219,8 @@ const submitLoginForm = async (params: {
     }
     const errorMessage =
       error instanceof Error ? error.message : t("auth.login.failed");
-    throw new Error(errorMessage);
+    onFieldError("password", errorMessage);
+    setCaptchaCode(generateCaptchaCode());
   }
 };
 
@@ -232,6 +235,7 @@ function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isPending, mutateAsync: loginMutationAsync } = useLoginMutation();
+  const setLoginContext = useAuthStore((state) => state.setLoginContext);
   const [captchaCode, setCaptchaCode] = useState<string>(() =>
     generateCaptchaCode()
   );
@@ -294,7 +298,10 @@ function Login() {
             errors: [message],
           }));
         },
-        onSuccess: () => navigate({ to: "/" }),
+        onSuccess: (response) => {
+          setLoginContext(response);
+          navigate({ to: "/" });
+        },
         setCaptchaCode,
         t,
         value,
