@@ -1,4 +1,5 @@
 import { REQUEST_CONFIG } from "@repo/config/request";
+import { toast } from "sonner";
 import type { z } from "zod";
 
 type RequestConfig<TSchema extends z.ZodType | undefined = undefined> = {
@@ -82,6 +83,7 @@ class Request {
           ? json.message[0]
           : json.message;
         errorMessage = message ?? json.error ?? errorMessage;
+        toast.error(errorMessage);
       } catch {
         // ignore json parse errors and keep fallback message
       }
