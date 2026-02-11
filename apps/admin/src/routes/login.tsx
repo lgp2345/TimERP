@@ -369,22 +369,27 @@ function Login() {
 
       <div className="relative flex w-full items-center justify-center p-8 lg:w-[44%]">
         <div className="w-full max-w-md">
-          <div className="mb-8 lg:hidden">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-              <Package className="h-7 w-7 text-primary-foreground" />
+          <div className="mb-4 lg:hidden">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
+                <Package className="h-7 w-7 text-primary-foreground" />
+              </div>
+              <div>
+                <h2 className="mb-1 font-bold text-2xl text-foreground">
+                  TimERP
+                </h2>
+                <p className="text-muted-foreground">
+                  Enterprise Login Console
+                </p>
+              </div>
             </div>
-            <h2 className="mb-1 font-bold text-2xl text-foreground">TimERP</h2>
-            <p className="text-muted-foreground">Enterprise Login Console</p>
           </div>
 
           <div className="rounded-2xl border border-border bg-card p-8 shadow-lg">
-            <div className="mb-8">
+            <div className="mb-4">
               <h1 className="mb-2 font-bold text-2xl text-card-foreground">
                 {t("auth.login.title")}
               </h1>
-              <p className="text-muted-foreground">
-                {t("auth.login.subtitle")}
-              </p>
             </div>
 
             <form
@@ -509,45 +514,47 @@ function Login() {
                     >
                       {t("auth.captcha.label", { defaultValue: "图形验证码" })}
                     </Label>
-                    <div className="mt-2 flex items-center gap-2">
-                      <div className="h-12 shrink-0 overflow-hidden rounded-lg border border-input bg-muted">
-                        <img
-                          alt={t("auth.captcha.imageAlt", {
-                            defaultValue: "图形验证码",
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <Image className="pointer-events-none absolute top-1/2 left-3.5 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          className="h-12 border-input bg-muted pl-11 text-card-foreground uppercase transition-colors focus:border-primary focus:bg-card"
+                          id={field.name}
+                          name={field.name}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          placeholder={t("auth.captcha.placeholder", {
+                            defaultValue: "输入上方验证码",
                           })}
-                          className="h-full w-[210px]"
-                          height={50}
-                          src={captchaData?.svg ?? ""}
-                          width={210}
+                          value={field.state.value}
                         />
                       </div>
-                      <button
-                        className="inline-flex h-12 w-12 cursor-pointer items-center justify-center rounded-lg border border-input bg-muted text-muted-foreground transition-colors duration-200 hover:border-primary hover:bg-accent hover:text-accent-foreground"
-                        disabled={isCaptchaPending}
-                        onClick={() => {
-                          refreshCaptcha().catch(() => null);
-                        }}
-                        title={t("auth.captcha.refresh", {
-                          defaultValue: "刷新验证码",
-                        })}
-                        type="button"
-                      >
-                        <RefreshCw className="h-4 w-4" />
-                      </button>
-                    </div>
-                    <div className="relative mt-2">
-                      <Image className="pointer-events-none absolute top-1/2 left-3.5 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        className="h-12 border-input bg-muted pl-11 text-card-foreground uppercase tracking-[0.2em] transition-colors focus:border-primary focus:bg-card"
-                        id={field.name}
-                        name={field.name}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        placeholder={t("auth.captcha.placeholder", {
-                          defaultValue: "输入上方验证码",
-                        })}
-                        value={field.state.value}
-                      />
+                      <div className="flex items-center gap-2">
+                        <div className="h-12 shrink-0 overflow-hidden rounded-lg border border-input bg-muted">
+                          <img
+                            alt={t("auth.captcha.imageAlt", {
+                              defaultValue: "图形验证码",
+                            })}
+                            className="h-full w-[120px]"
+                            height={50}
+                            src={captchaData?.svg ?? ""}
+                            width={120}
+                          />
+                        </div>
+                        <button
+                          className="inline-flex h-12 w-12 cursor-pointer items-center justify-center rounded-lg border border-input bg-muted text-muted-foreground transition-colors duration-200 hover:border-primary hover:bg-accent hover:text-accent-foreground"
+                          disabled={isCaptchaPending}
+                          onClick={() => {
+                            refreshCaptcha().catch(() => null);
+                          }}
+                          title={t("auth.captcha.refresh", {
+                            defaultValue: "刷新验证码",
+                          })}
+                          type="button"
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
                     <p className="absolute bottom-[-16px] text-[13px] text-destructive">
                       {field.state.meta.errors?.[0] ?? " "}
