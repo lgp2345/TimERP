@@ -1,5 +1,5 @@
 {
-  "id": "b79527f0-ab3a-4f26-85f4-14e00604356d",
+  "id": "0c5baf9f-38ac-4a63-ad39-56f4691fe47d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -129,10 +129,10 @@
         }
       },
       "foreignKeys": {
-        "account_user_id_user_id_fk": {
-          "name": "account_user_id_user_id_fk",
+        "account_user_id_users_id_fk": {
+          "name": "account_user_id_users_id_fk",
           "tableFrom": "account",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
@@ -149,8 +149,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.company": {
-      "name": "company",
+    "public.companies": {
+      "name": "companies",
       "schema": "",
       "columns": {
         "id": {
@@ -172,6 +172,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -191,8 +198,8 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "company_code_unique": {
-          "name": "company_code_unique",
+        "companies_code_unique": {
+          "name": "companies_code_unique",
           "nullsNotDistinct": false,
           "columns": [
             "code"
@@ -239,14 +246,28 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'active'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "company_domains_company_id_company_id_fk": {
-          "name": "company_domains_company_id_company_id_fk",
+        "company_domains_company_id_companies_id_fk": {
+          "name": "company_domains_company_id_companies_id_fk",
           "tableFrom": "company_domains",
-          "tableTo": "company",
+          "tableTo": "companies",
           "columnsFrom": [
             "company_id"
           ],
@@ -312,10 +333,10 @@
         }
       },
       "foreignKeys": {
-        "membership_roles_membership_id_membership_id_fk": {
-          "name": "membership_roles_membership_id_membership_id_fk",
+        "membership_roles_membership_id_memberships_id_fk": {
+          "name": "membership_roles_membership_id_memberships_id_fk",
           "tableFrom": "membership_roles",
-          "tableTo": "membership",
+          "tableTo": "memberships",
           "columnsFrom": [
             "membership_id"
           ],
@@ -345,8 +366,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.membership": {
-      "name": "membership",
+    "public.memberships": {
+      "name": "memberships",
       "schema": "",
       "columns": {
         "id": {
@@ -368,12 +389,43 @@
           "primaryKey": false,
           "notNull": true
         },
+        "member_no": {
+          "name": "member_no",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "status": {
           "name": "status",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "default": "'active'"
+        },
+        "joined_at": {
+          "name": "joined_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "invited_by": {
+          "name": "invited_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deactivated_at": {
+          "name": "deactivated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -411,13 +463,76 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "membership_company_member_no_unique": {
+          "name": "membership_company_member_no_unique",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "member_no",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "membership_company_status_idx": {
+          "name": "membership_company_status_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "membership_user_status_idx": {
+          "name": "membership_user_status_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
-        "membership_user_id_user_id_fk": {
-          "name": "membership_user_id_user_id_fk",
-          "tableFrom": "membership",
-          "tableTo": "user",
+        "memberships_user_id_users_id_fk": {
+          "name": "memberships_user_id_users_id_fk",
+          "tableFrom": "memberships",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
@@ -427,10 +542,10 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "membership_company_id_company_id_fk": {
-          "name": "membership_company_id_company_id_fk",
-          "tableFrom": "membership",
-          "tableTo": "company",
+        "memberships_company_id_companies_id_fk": {
+          "name": "memberships_company_id_companies_id_fk",
+          "tableFrom": "memberships",
+          "tableTo": "companies",
           "columnsFrom": [
             "company_id"
           ],
@@ -438,6 +553,19 @@
             "id"
           ],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "memberships_invited_by_users_id_fk": {
+          "name": "memberships_invited_by_users_id_fk",
+          "tableFrom": "memberships",
+          "tableTo": "users",
+          "columnsFrom": [
+            "invited_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -463,6 +591,25 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "resource": {
+          "name": "resource",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "effect": {
+          "name": "effect",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'allow'"
         },
         "description": {
           "name": "description",
@@ -578,14 +725,48 @@
           "primaryKey": false,
           "notNull": true
         },
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "name": {
           "name": "name",
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "is_system": {
+          "name": "is_system",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         }
       },
       "indexes": {
+        "roles_company_code_unique": {
+          "name": "roles_company_code_unique",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "code",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "roles_company_name_unique": {
           "name": "roles_company_name_unique",
           "columns": [
@@ -609,10 +790,10 @@
         }
       },
       "foreignKeys": {
-        "roles_company_id_company_id_fk": {
-          "name": "roles_company_id_company_id_fk",
+        "roles_company_id_companies_id_fk": {
+          "name": "roles_company_id_companies_id_fk",
           "tableFrom": "roles",
-          "tableTo": "company",
+          "tableTo": "companies",
           "columnsFrom": [
             "company_id"
           ],
@@ -670,6 +851,18 @@
           "primaryKey": false,
           "notNull": true
         },
+        "active_company_id": {
+          "name": "active_company_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "active_membership_id": {
+          "name": "active_membership_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -715,13 +908,43 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "session_active_company_idx": {
+          "name": "session_active_company_idx",
+          "columns": [
+            {
+              "expression": "active_company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "session_active_membership_idx": {
+          "name": "session_active_membership_idx",
+          "columns": [
+            {
+              "expression": "active_membership_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
-        "session_user_id_user_id_fk": {
-          "name": "session_user_id_user_id_fk",
+        "session_user_id_users_id_fk": {
+          "name": "session_user_id_users_id_fk",
           "tableFrom": "session",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
@@ -729,6 +952,19 @@
             "id"
           ],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "session_active_company_id_companies_id_fk": {
+          "name": "session_active_company_id_companies_id_fk",
+          "tableFrom": "session",
+          "tableTo": "companies",
+          "columnsFrom": [
+            "active_company_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -738,8 +974,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.user": {
-      "name": "user",
+    "public.users": {
+      "name": "users",
       "schema": "",
       "columns": {
         "id": {
@@ -780,9 +1016,29 @@
           "primaryKey": false,
           "notNull": false
         },
+        "phone_verified": {
+          "name": "phone_verified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
         "image": {
           "name": "image",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
+        },
+        "last_login_at": {
+          "name": "last_login_at",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": false
         },
