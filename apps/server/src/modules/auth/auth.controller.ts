@@ -15,6 +15,7 @@ import {
   type SwitchCompanyRequest,
   switchCompanyRequestSchema,
 } from "@repo/schema";
+import { OptionalAuth } from "@sapix/nestjs-better-auth-fastify";
 import { and, eq, inArray, or } from "drizzle-orm";
 import type { FastifyRequest } from "fastify";
 import { I18nService } from "nestjs-i18n";
@@ -31,10 +32,11 @@ import {
   sessions,
   users,
 } from "../../database/schema";
-import { AuthCaptchaService } from "./auth-captcha.service";
 import { auth } from "./auth";
+import { AuthCaptchaService } from "./auth-captcha.service";
 
 @Controller("auth")
+@OptionalAuth()
 export class AuthController {
   constructor(
     private readonly i18n: I18nService,
