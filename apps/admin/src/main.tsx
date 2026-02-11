@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import { routeTree } from "./routeTree.gen";
 import "./lib/i18n";
 import "./styles.css";
+import { applyTheme, useAppStore } from "./store/useAppStore";
 
 const queryClient = new QueryClient();
 
@@ -16,11 +17,15 @@ const router = createRouter({
   scrollRestoration: true,
 });
 
+const themeMode = useAppStore.getState().themeMode;
+applyTheme(themeMode);
+
 // Register things for typesafety
 declare module "@tanstack/react-router" {
-  interface Register {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+  type AppRouterRegister = {
     router: typeof router;
-  }
+  };
 }
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(

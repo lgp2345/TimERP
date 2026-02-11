@@ -13,17 +13,16 @@ import {
   Image,
   Loader2,
   Lock,
-  Moon,
   Package,
   RefreshCw,
   ShieldCheck,
-  Sun,
   TrendingUp,
   User,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ZodError } from "zod";
+import { ThemeModeButton } from "@/components/ThemeMode";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -33,7 +32,6 @@ import { useAuthStore } from "@/store/useAuthStore";
 
 export const Route = createFileRoute("/login")({ component: Login });
 
-type ThemeMode = "dark" | "light";
 type CaptchaValidationResult = {
   message: string;
   shouldRefresh: boolean;
@@ -53,17 +51,6 @@ type LoginSubmitValue = {
   userName: string;
 };
 type LoginFieldName = "captcha" | "companyCode" | "password" | "userName";
-
-const getInitialThemeMode = (): ThemeMode => {
-  if (typeof window === "undefined") {
-    return "light";
-  }
-  const stored = window.localStorage.getItem("theme-mode");
-  if (stored === "dark" || stored === "light") {
-    return stored;
-  }
-  return document.documentElement.classList.contains("dark") ? "dark" : "light";
-};
 
 const getCaptchaValidationResult = (
   value: string,
@@ -169,13 +156,6 @@ const submitLoginForm = async (params: {
   }
 };
 
-const ThemeModeIcon = ({ themeMode }: { themeMode: ThemeMode }) => {
-  if (themeMode === "dark") {
-    return <Sun className="h-4 w-4" />;
-  }
-  return <Moon className="h-4 w-4" />;
-};
-
 function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -184,7 +164,6 @@ function Login() {
     useCaptchaMutation();
   const setLoginContext = useAuthStore((state) => state.setLoginContext);
   const [captchaData, setCaptchaData] = useState<CaptchaResponse | null>(null);
-  const [themeMode, setThemeMode] = useState<ThemeMode>(getInitialThemeMode);
   const refreshCaptcha = useMemo(
     () => async () => {
       const captcha = await fetchCaptchaAsync();
@@ -221,11 +200,6 @@ function Login() {
   );
   const validateCaptcha = useMemo(() => createCaptchaFieldValidator(t), [t]);
 
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle("dark", themeMode === "dark");
-    window.localStorage.setItem("theme-mode", themeMode);
-  }, [themeMode]);
   useEffect(() => {
     refreshCaptcha().catch(() => null);
   }, [refreshCaptcha]);
@@ -265,15 +239,7 @@ function Login() {
         <div className="absolute -bottom-28 left-[-120px] h-80 w-80 rounded-full bg-accent/30 blur-3xl dark:bg-primary/20" />
       </div>
 
-      <button
-        className="absolute top-5 right-5 z-20 inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-border bg-card/85 text-foreground shadow-sm transition-colors duration-200 hover:border-primary hover:text-primary"
-        onClick={() =>
-          setThemeMode((prev) => (prev === "dark" ? "light" : "dark"))
-        }
-        type="button"
-      >
-        <ThemeModeIcon themeMode={themeMode} />
-      </button>
+      <ThemeModeButton />
 
       <div className="relative hidden w-full flex-col justify-between bg-[#0A1427] p-12 text-[#E2E8F0] lg:flex lg:w-[56%]">
         <div className="absolute inset-0 opacity-25">
