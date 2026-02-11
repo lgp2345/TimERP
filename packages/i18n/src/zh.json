@@ -19,7 +19,6 @@
     },
     "login": {
       "title": "欢迎登录",
-      "subtitle": "请输入您的登录信息",
       "rememberMe": "记住我",
       "submit": "登录",
       "failed": "登录失败"

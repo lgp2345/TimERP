@@ -14,7 +14,6 @@
     },
     "login": {
       "title": "Welcome",
-      "subtitle": "Please enter your login information",
       "rememberMe": "Remember me",
       "submit": "Login",
       "failed": "Login failed"
