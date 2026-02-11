@@ -420,7 +420,7 @@ export class AuthController {
         .innerJoin(companyDomains, eq(companyDomains.companyId, companies.id))
         .where(eq(companyDomains.host, hostName))
         .limit(1)
-        .then((rows) => rows[0]?.company);
+        .then((rows) => rows[0]?.companies);
     }
 
     const resolvedCompanyId = company?.id ?? activeCompany.id;

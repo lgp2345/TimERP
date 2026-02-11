@@ -10,7 +10,7 @@ import {
 import { companies } from "./companies.schema";
 
 export const users = pgTable(
-  "user",
+  "users",
   {
     id: uuid("id").defaultRandom().primaryKey(),
     name: text("name"),

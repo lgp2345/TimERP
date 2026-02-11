@@ -22,7 +22,10 @@ const pool = new Pool({
 });
 
 const schema = {
-  accounts,
+  user: users,
+  account: accounts,
+  session: sessions,
+  verification: verifications,
   companies,
   companyDomains,
   memberships,
@@ -30,9 +33,6 @@ const schema = {
   permissions,
   rolePermissions,
   roles,
-  sessions,
-  users,
-  verifications,
 };
 
 const db = drizzle(pool, { schema });
