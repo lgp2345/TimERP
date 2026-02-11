@@ -5,6 +5,8 @@ export const loginRequestSchema = z.object({
   identifier: z.string().trim().min(2, "auth.userName.required").optional(),
   userName: z.string().trim().min(2, "auth.userName.required").optional(),
   password: z.string().trim().min(6, "auth.password.required"),
+  captchaId: z.string().trim().min(1, "auth.captcha.required"),
+  captchaCode: z.string().trim().min(1, "auth.captcha.required"),
 });
 
 export const switchCompanyRequestSchema = z.object({
@@ -46,7 +48,14 @@ export const loginResponseSchema = z.object({
   cookies: z.string().optional(),
 });
 
+export const captchaResponseSchema = z.object({
+  captchaId: z.string(),
+  svg: z.string(),
+  expiresIn: z.number().int().positive(),
+});
+
 export type LoginResponse = z.infer<typeof loginResponseSchema>;
+export type CaptchaResponse = z.infer<typeof captchaResponseSchema>;
 
 export const jwtClaimsSchema = z.object({
   sub: z.string().min(1),

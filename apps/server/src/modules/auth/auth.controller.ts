@@ -2,12 +2,14 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   Headers,
   Post,
   Req,
   UnauthorizedException,
 } from "@nestjs/common";
 import {
+  captchaResponseSchema,
   type LoginRequest,
   loginRequestSchema,
   type SwitchCompanyRequest,
@@ -29,13 +31,15 @@ import {
   sessions,
   users,
 } from "../../database/schema";
+import { AuthCaptchaService } from "./auth-captcha.service";
 import { auth } from "./auth";
 
 @Controller("auth")
 export class AuthController {
   constructor(
     private readonly i18n: I18nService,
-    private readonly databaseService: DatabaseService
+    private readonly databaseService: DatabaseService,
+    private readonly authCaptchaService: AuthCaptchaService
   ) {}
 
   private normalizeIdentifier(identifier: string): string {
@@ -236,9 +240,23 @@ export class AuthController {
     };
   }
 
+  @Get("captcha")
+  getCaptcha() {
+    const captcha = this.authCaptchaService.createCaptcha();
+    return captchaResponseSchema.parse(captcha);
+  }
+
   @Post("login")
   async login(@Body() body: unknown) {
     const input = this.parseBody<LoginRequest>(body, loginRequestSchema.parse);
+    const captchaOk = this.authCaptchaService.verifyCaptcha(
+      input.captchaId,
+      input.captchaCode
+    );
+    if (!captchaOk) {
+      throw new UnauthorizedException("Invalid captcha");
+    }
+
     const identifierRaw = input.identifier ?? input.userName;
     if (!identifierRaw) {
       throw new BadRequestException(this.i18n.t("auth.userName.required"));

@@ -1,4 +1,5 @@
 import {
+  type CaptchaResponse,
   type LoginRequest,
   type LoginResponse,
   loginRequestSchema,
@@ -27,7 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useLoginMutation } from "@/queries/user.query";
+import { useCaptchaMutation, useLoginMutation } from "@/queries/user.query";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export const Route = createFileRoute("/login")({ component: Login });
@@ -53,57 +54,6 @@ type LoginSubmitValue = {
 };
 type LoginFieldName = "captcha" | "companyCode" | "password" | "userName";
 
-const CAPTCHA_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-const CAPTCHA_LENGTH = 5;
-
-const generateCaptchaCode = (): string =>
-  Array.from({ length: CAPTCHA_LENGTH }, () => {
-    const index = Math.floor(Math.random() * CAPTCHA_CHARS.length);
-    return CAPTCHA_CHARS[index] ?? "A";
-  }).join("");
-
-const buildCaptchaImage = (code: string): string => {
-  const seed = code
-    .split("")
-    .reduce((acc, char, index) => acc + char.charCodeAt(0) * (index + 3), 17);
-  const lines = Array.from({ length: 4 }, (_, index) => {
-    const y1 = 8 + ((seed + index * 17) % 34);
-    const y2 = 8 + ((seed + index * 29) % 34);
-    const hue = 195 + ((seed + index * 11) % 50);
-    return `<line x1="${10 + index * 28}" y1="${y1}" x2="${58 + index * 28}" y2="${y2}" stroke="hsl(${hue} 76% 42% / 0.35)" stroke-width="1.6" />`;
-  }).join("");
-
-  const dots = Array.from({ length: 16 }, (_, index) => {
-    const x = 8 + ((seed + index * 19) % 192);
-    const y = 8 + ((seed + index * 13) % 34);
-    const size = 0.7 + ((seed + index * 7) % 3) * 0.2;
-    return `<circle cx="${x}" cy="${y}" r="${size}" fill="hsl(201 94% 40% / 0.45)" />`;
-  }).join("");
-
-  const text = code
-    .split("")
-    .map((char, index) => {
-      const rotate = ((seed + index * 31) % 18) - 9;
-      return `<tspan dx="${index === 0 ? 0 : 6}" dy="${index % 2 === 0 ? 1 : -1}" rotate="${rotate}">${char}</tspan>`;
-    })
-    .join("");
-
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="210" height="50" viewBox="0 0 210 50">
-    <defs>
-      <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#E0F2FE" />
-        <stop offset="100%" stop-color="#F8FAFC" />
-      </linearGradient>
-    </defs>
-    <rect x="1" y="1" width="208" height="48" rx="10" fill="url(#bg)" stroke="#93C5FD" />
-    ${lines}
-    ${dots}
-    <text x="20" y="33" font-family="Space Mono, monospace" font-size="24" letter-spacing="3" fill="#0C4A6E" font-weight="700">${text}</text>
-  </svg>`;
-
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-};
-
 const getInitialThemeMode = (): ThemeMode => {
   if (typeof window === "undefined") {
     return "light";
@@ -117,20 +67,12 @@ const getInitialThemeMode = (): ThemeMode => {
 
 const getCaptchaValidationResult = (
   value: string,
-  captchaCode: string,
   t: TranslateFn
 ): CaptchaValidationResult | null => {
-  const normalizedCaptcha = value.trim().toUpperCase();
-  if (normalizedCaptcha.length === 0) {
+  if (value.trim().length === 0) {
     return {
       message: t("auth.captcha.required", { defaultValue: "请输入图形验证码" }),
       shouldRefresh: false,
-    };
-  }
-  if (normalizedCaptcha !== captchaCode) {
-    return {
-      message: t("auth.captcha.invalid", { defaultValue: "验证码不正确" }),
-      shouldRefresh: true,
     };
   }
   return null;
@@ -164,34 +106,35 @@ const createCaptchaFieldValidator =
   };
 
 const submitLoginForm = async (params: {
-  captchaCode: string;
+  captchaId: string | null;
   loginMutationAsync: (payload: LoginRequest) => Promise<LoginResponse>;
   onFieldError: (field: LoginFieldName, message: string) => void;
   onSuccess: (response: LoginResponse) => void;
-  setCaptchaCode: (value: string) => void;
+  refreshCaptcha: () => Promise<void>;
   t: TranslateFn;
   value: LoginSubmitValue;
 }) => {
   const {
-    captchaCode,
+    captchaId,
     loginMutationAsync,
     onFieldError,
     onSuccess,
-    setCaptchaCode,
+    refreshCaptcha,
     t,
     value,
   } = params;
 
-  const captchaValidation = getCaptchaValidationResult(
-    value.captcha,
-    captchaCode,
-    t
-  );
+  const captchaValidation = getCaptchaValidationResult(value.captcha, t);
   if (captchaValidation) {
     onFieldError("captcha", captchaValidation.message);
     if (captchaValidation.shouldRefresh) {
-      setCaptchaCode(generateCaptchaCode());
+      await refreshCaptcha();
     }
+    return;
+  }
+  if (!captchaId) {
+    onFieldError("captcha", t("auth.captcha.required"));
+    await refreshCaptcha();
     return;
   }
 
@@ -201,6 +144,8 @@ const submitLoginForm = async (params: {
       identifier: value.userName,
       userName: value.userName,
       password: value.password,
+      captchaId,
+      captchaCode: value.captcha,
     });
     const response = await loginMutationAsync(validated);
     onSuccess(response);
@@ -220,7 +165,7 @@ const submitLoginForm = async (params: {
     const errorMessage =
       error instanceof Error ? error.message : t("auth.login.failed");
     onFieldError("password", errorMessage);
-    setCaptchaCode(generateCaptchaCode());
+    await refreshCaptcha();
   }
 };
 
@@ -235,15 +180,17 @@ function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isPending, mutateAsync: loginMutationAsync } = useLoginMutation();
+  const { isPending: isCaptchaPending, mutateAsync: fetchCaptchaAsync } =
+    useCaptchaMutation();
   const setLoginContext = useAuthStore((state) => state.setLoginContext);
-  const [captchaCode, setCaptchaCode] = useState<string>(() =>
-    generateCaptchaCode()
-  );
+  const [captchaData, setCaptchaData] = useState<CaptchaResponse | null>(null);
   const [themeMode, setThemeMode] = useState<ThemeMode>(getInitialThemeMode);
-
-  const captchaImage = useMemo(
-    () => buildCaptchaImage(captchaCode),
-    [captchaCode]
+  const refreshCaptcha = useMemo(
+    () => async () => {
+      const captcha = await fetchCaptchaAsync();
+      setCaptchaData(captcha);
+    },
+    [fetchCaptchaAsync]
   );
   const validateCompanyCode = useMemo(
     () =>
@@ -279,6 +226,9 @@ function Login() {
     root.classList.toggle("dark", themeMode === "dark");
     window.localStorage.setItem("theme-mode", themeMode);
   }, [themeMode]);
+  useEffect(() => {
+    refreshCaptcha().catch(() => null);
+  }, [refreshCaptcha]);
 
   const form = useForm({
     defaultValues: {
@@ -290,7 +240,7 @@ function Login() {
     },
     onSubmit: ({ value }) =>
       submitLoginForm({
-        captchaCode,
+        captchaId: captchaData?.captchaId ?? null,
         loginMutationAsync,
         onFieldError: (field, message) => {
           form.setFieldMeta(field, (prev) => ({
@@ -302,7 +252,7 @@ function Login() {
           setLoginContext(response);
           navigate({ to: "/" });
         },
-        setCaptchaCode,
+        refreshCaptcha,
         t,
         value,
       }),
@@ -567,13 +517,16 @@ function Login() {
                           })}
                           className="h-full w-[210px]"
                           height={50}
-                          src={captchaImage}
+                          src={captchaData?.svg ?? ""}
                           width={210}
                         />
                       </div>
                       <button
                         className="inline-flex h-12 w-12 cursor-pointer items-center justify-center rounded-lg border border-input bg-muted text-muted-foreground transition-colors duration-200 hover:border-primary hover:bg-accent hover:text-accent-foreground"
-                        onClick={() => setCaptchaCode(generateCaptchaCode())}
+                        disabled={isCaptchaPending}
+                        onClick={() => {
+                          refreshCaptcha().catch(() => null);
+                        }}
                         title={t("auth.captcha.refresh", {
                           defaultValue: "刷新验证码",
                         })}

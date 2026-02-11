@@ -1,4 +1,6 @@
 export {
+  type CaptchaResponse,
+  captchaResponseSchema,
   type JwtClaims,
   jwtClaimsSchema,
   type LoginRequest,
