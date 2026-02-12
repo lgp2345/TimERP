@@ -15,7 +15,8 @@
         "noParameterProperties": "off"
       },
       "nursery": {
-        "useSortedClasses": "off"
+        "useSortedClasses": "off",
+        "noLeakedRender": "off"
       },
       "performance": {
         "noBarrelFile": "warn",
