@@ -5,6 +5,7 @@ import { AppService } from "./app.service";
 import { DatabaseModule } from "./database";
 import { AuthModule } from "./modules/auth/auth.module";
 import { I18nModule } from "./modules/i18n";
+import { SystemBootstrapModule } from "./modules/system-bootstrap/system-bootstrap.module";
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { I18nModule } from "./modules/i18n";
     DatabaseModule,
     I18nModule,
     AuthModule,
+    SystemBootstrapModule,
   ],
   controllers: [AppController],
   providers: [AppService],
