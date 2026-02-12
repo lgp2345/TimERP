@@ -17,15 +17,31 @@ import {
   verifications,
 } from "../../database/schema";
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL ?? "",
-});
+const getDatabaseConfig = () => {
+  const connectionString =
+    process.env.DATABASE_URL ??
+    "postgresql://postgres:postgres@localhost:5432/postgres";
+
+  let password = "";
+  try {
+    password = new URL(connectionString).password ?? "";
+  } catch {
+    password = "";
+  }
+
+  return {
+    connectionString,
+    password,
+  };
+};
+
+const pool = new Pool(getDatabaseConfig());
 
 const schema = {
-  user: users,
-  account: accounts,
-  session: sessions,
-  verification: verifications,
+  users,
+  accounts,
+  sessions,
+  verifications,
   companies,
   companyDomains,
   memberships,
@@ -43,6 +59,18 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+  },
+  user: {
+    modelName: "users",
+  },
+  account: {
+    modelName: "accounts",
+  },
+  session: {
+    modelName: "sessions",
+  },
+  verification: {
+    modelName: "verifications",
   },
   plugins: [
     username(),
