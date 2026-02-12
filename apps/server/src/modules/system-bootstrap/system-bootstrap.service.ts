@@ -4,6 +4,7 @@ import {
   type OnApplicationBootstrap,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { hash } from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { DatabaseService } from "../../database";
 import {
@@ -93,6 +94,7 @@ export class SystemBootstrapService implements OnApplicationBootstrap {
 
   private async ensureAdminUser(username: string, password: string) {
     const db = this.databaseService.db;
+    const passwordHash = await hash(password, 10);
 
     const existing = await db
       .select()
@@ -102,23 +104,43 @@ export class SystemBootstrapService implements OnApplicationBootstrap {
       .then((rows) => rows[0]);
 
     if (existing) {
-      return existing;
+      await db
+        .update(users)
+        .set({
+          name: existing.name ?? username,
+          passwordHash,
+          status: "active",
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, existing.id));
+
+      const updated = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, existing.id))
+        .limit(1)
+        .then((rows) => rows[0]);
+      if (!updated) {
+        throw new Error(`failed to update bootstrap admin user: ${username}`);
+      }
+      return updated;
     }
 
-    const result = await db
+    const createdRows = await db
       .insert(users)
       .values({
         username,
         name: username,
         status: "active",
+        passwordHash,
       })
-      .onConflictDoNothing()
       .returning();
+    const created = createdRows[0];
 
-    if (!result[0]) {
+    if (!created) {
       throw new Error("bootstrap admin user not found after sign up");
     }
-    return result[0];
+    return created;
   }
 
   private async ensureOwnerRole(companyId: string) {

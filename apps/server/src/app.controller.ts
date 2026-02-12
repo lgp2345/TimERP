@@ -1,37 +1,26 @@
-import { Controller, Get } from "@nestjs/common";
-import {
-  AllowAnonymous,
-  OptionalAuth,
-  Session,
-} from "@sapix/nestjs-better-auth-fastify";
-import type { Session as BetterAuthSession } from "./modules/auth/auth";
+import { Controller, Get, UseGuards } from "@nestjs/common";
+import { type AuthUser } from "./modules/auth/auth.types";
+import { AuthGuard } from "./modules/auth/auth.guard";
+import { CurrentUser } from "./modules/auth/current-user.decorator";
 
 @Controller()
 export class AppController {
   @Get("public")
-  @AllowAnonymous()
   getPublicData() {
     return { message: "This is public" };
   }
 
   @Get()
-  @OptionalAuth()
-  getHello(@Session() session: BetterAuthSession | null) {
-    if (session) {
-      return {
-        message: "Hello authenticated user!",
-        user: session.user,
-        sessionType: "session or jwt",
-      };
-    }
+  getHello() {
     return { message: "Hello anonymous user!" };
   }
 
   @Get("protected")
-  getProtected(@Session() session: BetterAuthSession) {
+  @UseGuards(AuthGuard)
+  getProtected(@CurrentUser() user: AuthUser) {
     return {
       message: "This is a protected route",
-      user: session.user,
+      user,
     };
   }
 }

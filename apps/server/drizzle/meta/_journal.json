@@ -8,6 +8,34 @@
       "when": 1770808920196,
       "tag": "0000_broad_colonel_america",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1770867113507,
+      "tag": "0001_zippy_prism",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770902400000,
+      "tag": "0002_add_display_username_to_users",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1770876578094,
+      "tag": "0003_polite_jack_power",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1770912000000,
+      "tag": "0004_jwt_auth_cutover",
+      "breakpoints": true
     }
   ]
 }

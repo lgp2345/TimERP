@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common";
-import { AuthModule as Auth } from "@sapix/nestjs-better-auth-fastify";
 import { AuthCaptchaService } from "./auth-captcha.service";
-import { auth } from "./auth";
 import { AuthController } from "./auth.controller";
+import { AuthGuard } from "./auth.guard";
+import { JwtAuthService } from "./jwt-auth.service";
 
 @Module({
-  imports: [Auth.forRoot({ auth })],
   controllers: [AuthController],
-  providers: [AuthCaptchaService],
+  providers: [AuthCaptchaService, JwtAuthService, AuthGuard],
+  exports: [JwtAuthService, AuthGuard],
 })
 export class AuthModule {}

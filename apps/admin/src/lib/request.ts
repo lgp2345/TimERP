@@ -1,6 +1,7 @@
 import { REQUEST_CONFIG } from "@repo/config/request";
 import { toast } from "sonner";
 import type { z } from "zod";
+import { useAuthStore } from "@/store/useAuthStore";
 
 type RequestConfig<TSchema extends z.ZodType | undefined = undefined> = {
   url: string;
@@ -219,3 +220,17 @@ class Request {
 }
 
 export const request = new Request();
+
+request.interceptors.request.use((config) => {
+  const token = useAuthStore.getState().loginContext?.accessToken;
+  if (!token) {
+    return config;
+  }
+  return {
+    ...config,
+    headers: {
+      ...config.headers,
+      Authorization: `Bearer ${token}`,
+    },
+  };
+});

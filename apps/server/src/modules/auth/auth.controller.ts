@@ -7,16 +7,21 @@ import {
   Post,
   Req,
   UnauthorizedException,
+  UseGuards,
 } from "@nestjs/common";
 import {
   captchaResponseSchema,
   type LoginRequest,
-  loginRequestSchema,
+  type LogoutRequest,
+  type RefreshSessionRequest,
   type SwitchCompanyRequest,
+  loginRequestSchema,
+  logoutRequestSchema,
+  refreshSessionRequestSchema,
   switchCompanyRequestSchema,
 } from "@repo/schema";
-import { OptionalAuth } from "@sapix/nestjs-better-auth-fastify";
 import { and, eq, inArray, or } from "drizzle-orm";
+import { compare } from "bcryptjs";
 import type { FastifyRequest } from "fastify";
 import { I18nService } from "nestjs-i18n";
 import { ZodError } from "zod";
@@ -27,21 +32,24 @@ import {
   membershipRoles,
   memberships,
   permissions,
+  refreshTokens,
   rolePermissions,
   roles,
-  sessions,
   users,
 } from "../../database/schema";
-import { auth } from "./auth";
 import { AuthCaptchaService } from "./auth-captcha.service";
+import { type AuthUser } from "./auth.types";
+import { AuthGuard } from "./auth.guard";
+import { CurrentUser } from "./current-user.decorator";
+import { JwtAuthService } from "./jwt-auth.service";
 
 @Controller("auth")
-@OptionalAuth()
 export class AuthController {
   constructor(
     private readonly i18n: I18nService,
     private readonly databaseService: DatabaseService,
-    private readonly authCaptchaService: AuthCaptchaService
+    private readonly authCaptchaService: AuthCaptchaService,
+    private readonly jwtAuthService: JwtAuthService
   ) {}
 
   private normalizeIdentifier(identifier: string): string {
@@ -83,30 +91,6 @@ export class AuthController {
     return [...permissionSet];
   }
 
-  private getCookie(headers: FastifyRequest["headers"]): string {
-    return typeof headers.cookie === "string" ? headers.cookie : "";
-  }
-
-  private async getSessionByCookie(cookie: string) {
-    if (!cookie) {
-      throw new UnauthorizedException("No session cookie");
-    }
-    const sessionData = await auth.api.getSession({
-      headers: {
-        cookie,
-      },
-    });
-    const sessionId = sessionData?.session?.id;
-    const userId = sessionData?.user?.id;
-    if (!sessionId) {
-      throw new UnauthorizedException("Invalid session");
-    }
-    if (!userId) {
-      throw new UnauthorizedException("Invalid session");
-    }
-    return sessionData;
-  }
-
   private async resolveCompany(companyCode: string) {
     const db = this.databaseService.db;
     const company = await db
@@ -146,31 +130,100 @@ export class AuthController {
     return membership;
   }
 
+  private async resolveActiveMembershipForUser(userId: string, host?: string) {
+    const db = this.databaseService.db;
+    const membershipRows = await db
+      .select({ id: memberships.id, companyId: memberships.companyId })
+      .from(memberships)
+      .where(
+        and(eq(memberships.userId, userId), eq(memberships.status, "active"))
+      );
+
+    if (membershipRows.length === 0) {
+      throw new UnauthorizedException("User has no active memberships");
+    }
+
+    const companyIdList = membershipRows.map((item) => item.companyId);
+    let companyId = membershipRows[0]?.companyId;
+    if (host) {
+      const resolved = await db
+        .select({ id: companies.id })
+        .from(companies)
+        .innerJoin(companyDomains, eq(companyDomains.companyId, companies.id))
+        .where(
+          and(eq(companyDomains.host, host), inArray(companies.id, companyIdList))
+        )
+        .limit(1)
+        .then((rows) => rows[0]);
+
+      if (resolved?.id) {
+        companyId = resolved.id;
+      }
+    }
+
+    const membership =
+      membershipRows.find((item) => item.companyId === companyId) ??
+      membershipRows[0];
+    if (!membership) {
+      throw new UnauthorizedException("User has no active memberships");
+    }
+
+    return membership;
+  }
+
+  private async issueTokens(input: {
+    userId: string;
+    companyId: string;
+    membershipId: string;
+    req: FastifyRequest;
+  }): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number;
+  }> {
+    const { token: accessToken, expiresIn } =
+      await this.jwtAuthService.issueAccessToken({
+        userId: input.userId,
+        companyId: input.companyId,
+        membershipId: input.membershipId,
+      });
+    const { token: refreshToken, expiresAt } =
+      await this.jwtAuthService.issueRefreshToken({
+        userId: input.userId,
+      });
+
+    const userAgentRaw = input.req.headers["user-agent"];
+    const userAgent = Array.isArray(userAgentRaw)
+      ? userAgentRaw[0]
+      : userAgentRaw;
+
+    await this.databaseService.db.insert(refreshTokens).values({
+      userId: input.userId,
+      tokenHash: this.jwtAuthService.hashToken(refreshToken),
+      expiresAt,
+      ipAddress: input.req.ip,
+      userAgent,
+    });
+
+    return { accessToken, refreshToken, expiresIn };
+  }
+
   private async buildLoginResponse({
     companyId,
     membershipId,
-    sessionId,
     userId,
-    setCookieHeader,
-    sessionPayload,
+    accessToken,
+    refreshToken,
+    expiresIn,
   }: {
     companyId: string;
     membershipId: string;
-    sessionId: string;
     userId: string;
-    setCookieHeader: string;
-    sessionPayload: unknown;
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number;
   }) {
     const db = this.databaseService.db;
-
-    await db
-      .update(sessions)
-      .set({
-        activeCompanyId: companyId,
-        activeMembershipId: membershipId,
-        updatedAt: new Date(),
-      })
-      .where(eq(sessions.id, sessionId));
 
     await db
       .update(users)
@@ -237,8 +290,9 @@ export class AuthController {
         memberNo: membership.memberNo,
       },
       permissions: permissionCodes,
-      session: sessionPayload,
-      cookies: setCookieHeader,
+      accessToken,
+      refreshToken,
+      expiresIn,
     };
   }
 
@@ -249,7 +303,7 @@ export class AuthController {
   }
 
   @Post("login")
-  async login(@Body() body: unknown) {
+  async login(@Body() body: unknown, @Req() req: FastifyRequest) {
     const input = this.parseBody<LoginRequest>(body, loginRequestSchema.parse);
     const captchaOk = this.authCaptchaService.verifyCaptcha(
       input.captchaId,
@@ -287,175 +341,143 @@ export class AuthController {
     if (user.status !== "active") {
       throw new UnauthorizedException("User is not active");
     }
-
-    const membership = await this.resolveMembership(user.id, company.id);
-
-    const signInResponse =
-      user.email && identifier.includes("@")
-        ? await auth.api.signInEmail({
-            body: {
-              email: user.email,
-              password: input.password,
-            },
-            headers: {},
-            asResponse: true,
-          })
-        : await auth.api.signInUsername({
-            body: {
-              username: user.username,
-              password: input.password,
-            },
-            headers: {},
-            asResponse: true,
-          });
-
-    if (!signInResponse || signInResponse.status !== 200) {
+    if (!user.passwordHash) {
       throw new UnauthorizedException("Invalid credentials");
     }
 
-    const setCookieHeader = signInResponse.headers.get("set-cookie") ?? "";
-    const session = await auth.api.getSession({
-      headers: {
-        cookie: setCookieHeader,
-      },
-    });
-    if (!session?.session?.id) {
-      throw new UnauthorizedException("Failed to create session");
+    const passwordOk = await compare(input.password, user.passwordHash);
+    if (!passwordOk) {
+      throw new UnauthorizedException("Invalid credentials");
     }
+
+    const membership = await this.resolveMembership(user.id, company.id);
+    const tokens = await this.issueTokens({
+      userId: user.id,
+      companyId: company.id,
+      membershipId: membership.id,
+      req,
+    });
 
     return this.buildLoginResponse({
       companyId: company.id,
       membershipId: membership.id,
-      sessionId: session.session.id,
       userId: user.id,
-      setCookieHeader,
-      sessionPayload: session,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      expiresIn: tokens.expiresIn,
     });
   }
 
   @Post("switch-company")
-  async switchCompany(@Body() body: unknown, @Req() req: FastifyRequest) {
+  @UseGuards(AuthGuard)
+  async switchCompany(
+    @Body() body: unknown,
+    @CurrentUser() currentUser: AuthUser,
+    @Req() req: FastifyRequest
+  ) {
     const input = this.parseBody<SwitchCompanyRequest>(
       body,
       switchCompanyRequestSchema.parse
     );
-    const cookie = this.getCookie(req.headers);
-    const sessionData = await this.getSessionByCookie(cookie);
     const company = await this.resolveCompany(input.companyCode);
-    const membership = await this.resolveMembership(
-      sessionData.user.id,
-      company.id
-    );
-
-    const db = this.databaseService.db;
-    await db
-      .update(sessions)
-      .set({
-        activeCompanyId: company.id,
-        activeMembershipId: membership.id,
-        updatedAt: new Date(),
-      })
-      .where(eq(sessions.id, sessionData.session.id));
+    const membership = await this.resolveMembership(currentUser.id, company.id);
+    const tokens = await this.issueTokens({
+      userId: currentUser.id,
+      companyId: company.id,
+      membershipId: membership.id,
+      req,
+    });
 
     return this.buildLoginResponse({
       companyId: company.id,
       membershipId: membership.id,
-      sessionId: sessionData.session.id,
-      userId: sessionData.user.id,
-      setCookieHeader: cookie,
-      sessionPayload: sessionData,
+      userId: currentUser.id,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      expiresIn: tokens.expiresIn,
     });
   }
 
   @Post("refresh-session")
   async refreshSession(
+    @Body() body: unknown,
     @Req() req: FastifyRequest,
     @Headers("host") host?: string
   ) {
-    const cookie = this.getCookie(req.headers);
-    const sessionData = await this.getSessionByCookie(cookie);
-    const db = this.databaseService.db;
+    const input = this.parseBody<RefreshSessionRequest>(
+      body,
+      refreshSessionRequestSchema.parse
+    );
 
-    const membershipIds = await db
-      .select({ id: memberships.id, companyId: memberships.companyId })
-      .from(memberships)
+    const claims = await this.jwtAuthService.verifyRefreshToken(input.refreshToken);
+    const now = new Date();
+    const tokenHash = this.jwtAuthService.hashToken(input.refreshToken);
+    const db = this.databaseService.db;
+    const currentToken = await db
+      .select()
+      .from(refreshTokens)
       .where(
         and(
-          eq(memberships.userId, sessionData.user.id),
-          eq(memberships.status, "active")
+          eq(refreshTokens.userId, claims.sub),
+          eq(refreshTokens.tokenHash, tokenHash)
         )
-      );
-
-    if (membershipIds.length === 0) {
-      throw new UnauthorizedException("User has no active memberships");
-    }
-
-    const companyIdList = membershipIds.map((item) => item.companyId);
-    const activeCompany = await db
-      .select()
-      .from(companies)
-      .where(inArray(companies.id, companyIdList))
+      )
       .limit(1)
       .then((rows) => rows[0]);
 
-    if (!activeCompany) {
-      throw new UnauthorizedException("No active company context");
+    if (!currentToken || currentToken.revokedAt || currentToken.expiresAt <= now) {
+      throw new UnauthorizedException("Invalid refresh token");
     }
+
+    await db
+      .update(refreshTokens)
+      .set({ revokedAt: now, updatedAt: now })
+      .where(eq(refreshTokens.id, currentToken.id));
 
     const hostName = host?.split(":")[0];
-    let company:
-      | {
-          id: string;
-          code: string;
-          name: string;
-          status: string;
-          createdAt: Date;
-          updatedAt: Date;
-        }
-      | undefined;
-    if (hostName) {
-      company = await db
-        .select()
-        .from(companies)
-        .innerJoin(companyDomains, eq(companyDomains.companyId, companies.id))
-        .where(eq(companyDomains.host, hostName))
-        .limit(1)
-        .then((rows) => rows[0]?.companies);
-    }
-
-    const resolvedCompanyId = company?.id ?? activeCompany.id;
-    const membership = await this.resolveMembership(
-      sessionData.user.id,
-      resolvedCompanyId
-    );
+    const membership = await this.resolveActiveMembershipForUser(claims.sub, hostName);
+    const tokens = await this.issueTokens({
+      userId: claims.sub,
+      companyId: membership.companyId,
+      membershipId: membership.id,
+      req,
+    });
 
     return this.buildLoginResponse({
-      companyId: resolvedCompanyId,
+      companyId: membership.companyId,
       membershipId: membership.id,
-      sessionId: sessionData.session.id,
-      userId: sessionData.user.id,
-      setCookieHeader: cookie,
-      sessionPayload: sessionData,
+      userId: claims.sub,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      expiresIn: tokens.expiresIn,
     });
   }
 
   @Post("logout")
-  async logout(@Req() req: FastifyRequest) {
-    const cookie = this.getCookie(req.headers);
-    if (!cookie) {
+  async logout(@Body() body: unknown) {
+    const input = this.parseBody<LogoutRequest>(body, logoutRequestSchema.parse);
+    try {
+      const claims = await this.jwtAuthService.verifyRefreshToken(input.refreshToken);
+      const tokenHash = this.jwtAuthService.hashToken(input.refreshToken);
+      const now = new Date();
+      await this.databaseService.db
+        .update(refreshTokens)
+        .set({
+          revokedAt: now,
+          updatedAt: now,
+        })
+        .where(
+          and(
+            eq(refreshTokens.userId, claims.sub),
+            eq(refreshTokens.tokenHash, tokenHash)
+          )
+        );
+    } catch {
       return { success: true };
     }
 
-    const response = await auth.api.signOut({
-      headers: {
-        cookie,
-      },
-      asResponse: true,
-    });
-
     return {
       success: true,
-      cookies: response.headers.get("set-cookie") ?? "",
     };
   }
 }
