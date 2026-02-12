@@ -1,4 +1,4 @@
-import { REQUEST_CONFIG } from "@repo/config/request";
+import { REQUEST_CONFIG, type ApiResponse } from "@repo/config/request";
 import { toast } from "sonner";
 import type { z } from "zod";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -73,17 +73,17 @@ class Request {
     response: Response,
     schema?: z.ZodType
   ): Promise<unknown> {
+    const parseApiResponse = async () => {
+      const json = (await response.json()) as ApiResponse<unknown>;
+      return json;
+    };
+
     if (!response.ok) {
       let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
       try {
-        const json = (await response.json()) as {
-          message?: string | string[];
-          error?: string;
-        };
-        const message = Array.isArray(json.message)
-          ? json.message[0]
-          : json.message;
-        errorMessage = message ?? json.error ?? errorMessage;
+        const json = await parseApiResponse();
+        const message = json.message;
+        errorMessage = message ?? errorMessage;
         toast.error(errorMessage);
       } catch {
         // ignore json parse errors and keep fallback message
@@ -91,13 +91,14 @@ class Request {
       throw new Error(errorMessage);
     }
 
-    const json = await response.json();
+    const apiResponse = await parseApiResponse();
+    const payload = apiResponse.data;
 
     if (schema) {
-      return schema.parse(json);
+      return schema.parse(payload);
     }
 
-    return json;
+    return payload;
   }
 
   async request<
