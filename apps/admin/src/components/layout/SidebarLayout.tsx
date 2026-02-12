@@ -78,9 +78,15 @@ const getDefaultOpenRouteKeys = (groups: SidebarNavItem[]) => {
   const keys: Record<string, boolean> = {};
   const walk = (items: SidebarNavItem[]) => {
     for (const item of items) {
-      if (item.children && item.children.length > 0) {
+      if (item.disabled) {
+        continue;
+      }
+      const visibleChildren = (item.children ?? []).filter(
+        (child) => !child.disabled
+      );
+      if (visibleChildren.length > 0) {
         keys[item.key] = true;
-        walk(item.children);
+        walk(visibleChildren);
       }
     }
   };
@@ -154,8 +160,15 @@ function SidebarNavEntry({
   setOpenRouteKeys,
   depth = 0,
 }: SidebarNavEntryProps) {
+  if (item.disabled) {
+    return null;
+  }
+
+  const visibleChildren = (item.children ?? []).filter(
+    (child) => !child.disabled
+  );
   const itemIsActive = isRouteActive(pathname, item.path);
-  const hasChildren = Boolean(item.children && item.children.length > 0);
+  const hasChildren = visibleChildren.length > 0;
   const routeOpen = hasChildren ? (openRouteKeys[item.key] ?? false) : false;
   const canShowChildren = Boolean(
     !isSidebarCollapsed && hasChildren && routeOpen
@@ -187,14 +200,14 @@ function SidebarNavEntry({
         routeOpen={routeOpen}
       />
 
-      {canShowChildren && item.children ? (
+      {canShowChildren ? (
         <SidebarMenu
           className={cn(
             "mt-1 border-sidebar-border border-l pl-2",
             isNestedItem ? "ml-4" : "ml-5"
           )}
         >
-          {item.children.map((child) => (
+          {visibleChildren.map((child) => (
             <SidebarNavEntry
               depth={depth + 1}
               isSidebarCollapsed={isSidebarCollapsed}
@@ -274,19 +287,21 @@ export function SidebarLayout({
         </SidebarHeader>
 
         <SidebarContent className={cn("min-h-0", isSidebarCollapsed && "px-2")}>
-          {groupedNav.map((group) => (
-            <SidebarMenu key={group.key}>
-              <SidebarNavEntry
-                isSidebarCollapsed={isSidebarCollapsed}
-                item={group}
-                key={group.key}
-                navigate={navigate}
-                openRouteKeys={openRouteKeys}
-                pathname={pathname}
-                setOpenRouteKeys={setOpenRouteKeys}
-              />
-            </SidebarMenu>
-          ))}
+          {groupedNav
+            .filter((group) => !group.disabled)
+            .map((group) => (
+              <SidebarMenu key={group.key}>
+                <SidebarNavEntry
+                  isSidebarCollapsed={isSidebarCollapsed}
+                  item={group}
+                  key={group.key}
+                  navigate={navigate}
+                  openRouteKeys={openRouteKeys}
+                  pathname={pathname}
+                  setOpenRouteKeys={setOpenRouteKeys}
+                />
+              </SidebarMenu>
+            ))}
         </SidebarContent>
 
         <SidebarFooter className="space-y-3">
