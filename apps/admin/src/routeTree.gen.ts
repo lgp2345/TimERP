@@ -10,23 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as Index3RouteImport } from './routes/index3'
-import { Route as Index2RouteImport } from './routes/index2'
 import { Route as IndexRouteImport } from './routes/index'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Index3Route = Index3RouteImport.update({
-  id: '/index3',
-  path: '/index3',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Index2Route = Index2RouteImport.update({
-  id: '/index2',
-  path: '/index2',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -37,35 +25,27 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/index2': typeof Index2Route
-  '/index3': typeof Index3Route
   '/login': typeof LoginRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/index2': typeof Index2Route
-  '/index3': typeof Index3Route
   '/login': typeof LoginRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/index2': typeof Index2Route
-  '/index3': typeof Index3Route
   '/login': typeof LoginRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/index2' | '/index3' | '/login'
+  fullPaths: '/' | '/login'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/index2' | '/index3' | '/login'
-  id: '__root__' | '/' | '/index2' | '/index3' | '/login'
+  to: '/' | '/login'
+  id: '__root__' | '/' | '/login'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  Index2Route: typeof Index2Route
-  Index3Route: typeof Index3Route
   LoginRoute: typeof LoginRoute
 }
 
@@ -76,20 +56,6 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/index3': {
-      id: '/index3'
-      path: '/index3'
-      fullPath: '/index3'
-      preLoaderRoute: typeof Index3RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/index2': {
-      id: '/index2'
-      path: '/index2'
-      fullPath: '/index2'
-      preLoaderRoute: typeof Index2RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -104,8 +70,6 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  Index2Route: Index2Route,
-  Index3Route: Index3Route,
   LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport

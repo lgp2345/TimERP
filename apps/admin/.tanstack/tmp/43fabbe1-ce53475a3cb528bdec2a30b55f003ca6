@@ -16,7 +16,7 @@ import {
   Zap,
 } from "lucide-react";
 
-export const Route = createFileRoute("/index3")({
+export const Route = createFileRoute("/")({
   component: HomeV3,
 });
 
@@ -43,7 +43,9 @@ function HomeV3() {
               <Cpu className="h-5 w-5 text-[#E2E8F0]" />
             </div>
             <div>
-              <p className="font-semibold text-base tracking-wide">TimERP Pulse</p>
+              <p className="font-semibold text-base tracking-wide">
+                TimERP Pulse
+              </p>
               <p className="text-[#475569] text-xs">Enterprise Control Layer</p>
             </div>
           </div>
@@ -81,7 +83,9 @@ function HomeV3() {
               <div className="mt-8 grid gap-4 sm:grid-cols-3">
                 <div className="rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
                   <p className="text-[#64748B] text-xs">订单响应速度</p>
-                  <p className="mt-2 font-semibold text-2xl text-[#0369A1]">+42%</p>
+                  <p className="mt-2 font-semibold text-2xl text-[#0369A1]">
+                    +42%
+                  </p>
                 </div>
                 <div className="rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
                   <p className="text-[#64748B] text-xs">库存准确率</p>
@@ -89,7 +93,9 @@ function HomeV3() {
                 </div>
                 <div className="rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
                   <p className="text-[#64748B] text-xs">异常识别时间</p>
-                  <p className="mt-2 font-semibold text-2xl text-[#16A34A]">1.2 秒</p>
+                  <p className="mt-2 font-semibold text-2xl text-[#16A34A]">
+                    1.2 秒
+                  </p>
                 </div>
               </div>
             </article>
@@ -117,7 +123,9 @@ function HomeV3() {
               </article>
 
               <article className="rounded-3xl border border-[#CBD5E1] bg-white p-6 shadow-sm">
-                <p className="mb-4 font-medium text-[#0369A1] text-sm">可信体系</p>
+                <p className="mb-4 font-medium text-[#0369A1] text-sm">
+                  可信体系
+                </p>
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center gap-3 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3">
                     <ShieldCheck className="h-4 w-4 text-[#16A34A]" />
@@ -184,9 +192,7 @@ function HomeV3() {
               <article className="cursor-pointer rounded-2xl border border-[#CBD5E1] bg-white p-5 shadow-sm transition-colors duration-200 hover:border-[#0369A1] hover:bg-[#F0F9FF]">
                 <Database className="mb-4 h-5 w-5 text-[#0369A1]" />
                 <h3 className="font-semibold">数据资产中台</h3>
-                <p className="mt-2 text-[#64748B] text-sm">
-                  主数据统一治理。
-                </p>
+                <p className="mt-2 text-[#64748B] text-sm">主数据统一治理。</p>
               </article>
               <article className="cursor-pointer rounded-2xl border border-[#CBD5E1] bg-white p-5 shadow-sm transition-colors duration-200 hover:border-[#0369A1] hover:bg-[#F0F9FF]">
                 <Layers className="mb-4 h-5 w-5 text-[#0369A1]" />
