@@ -239,12 +239,12 @@ export function SidebarLayout({ groups, children }: SidebarLayoutProps) {
     <SidebarProvider>
       <Sidebar
         className={cn(
-          "overflow-hidden transition-all duration-200 md:h-screen",
+          "transition-all duration-200 md:h-screen",
           isSidebarCollapsed && "md:w-20"
         )}
       >
-        <SidebarHeader className="px-3 h-[70px]">
-          <div className="flex items-center justify-between gap-2 relative">
+        <SidebarHeader className="px-3 h-20 flex items-center">
+          <div className="flex items-center justify-between gap-2 relative w-full">
             <div className="flex min-w-0 items-center gap-2">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary">
                 <span className="font-semibold text-sidebar-primary-foreground text-sm">

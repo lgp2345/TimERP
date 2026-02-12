@@ -100,11 +100,7 @@ function HomeV3() {
   );
 
   return (
-    <SidebarLayout
-      groups={sidebarGroups}
-      subtitle="生产、库存、财务同屏观察"
-      title="总览看板"
-    >
+    <SidebarLayout groups={sidebarGroups}>
       <div className="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-4">
         <article className="rounded-xl border bg-card p-4 shadow-sm">
           <p className="text-muted-foreground text-xs">订单流转效率</p>
