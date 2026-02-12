@@ -14,7 +14,6 @@ type HeaderBarSidebarNavItem = {
 };
 
 type HeaderBarProps = {
-  title: string;
   pathname: string;
   groups: HeaderBarSidebarNavItem[];
   navigate: ReturnType<typeof useNavigate>;
@@ -75,12 +74,7 @@ const getActiveNavTrail = (
 /**
  * Renders top header bar with breadcrumbs, cache tabs and user profile.
  */
-export function HeaderBar({
-  title,
-  pathname,
-  groups,
-  navigate,
-}: HeaderBarProps) {
+export function HeaderBar({ pathname, groups, navigate }: HeaderBarProps) {
   const activeTrail = useMemo(
     () => getActiveNavTrail(groups, pathname),
     [groups, pathname]
@@ -92,15 +86,8 @@ export function HeaderBar({
     if (list.length > 1) {
       return list;
     }
-    return [
-      rootItem,
-      {
-        key: "current",
-        label: title,
-        path: pathname === "/" ? "/" : undefined,
-      },
-    ];
-  }, [activeTrail, pathname, title]);
+    return [rootItem];
+  }, [activeTrail]);
 
   const cacheTabItems = useMemo(() => {
     const unique: HeaderNavNode[] = [];

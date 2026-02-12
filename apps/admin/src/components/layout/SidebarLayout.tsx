@@ -31,8 +31,6 @@ export type SidebarNavItem = {
 export type SidebarNavGroup = SidebarNavItem;
 
 type SidebarLayoutProps = {
-  title: string;
-  subtitle: string;
   groups: SidebarNavItem[];
   children: React.ReactNode;
 };
@@ -227,12 +225,7 @@ function SidebarNavEntry({
 /**
  * Admin page layout with collapsible sidebar and nested route folding.
  */
-export function SidebarLayout({
-  title,
-  subtitle,
-  groups,
-  children,
-}: SidebarLayoutProps) {
+export function SidebarLayout({ groups, children }: SidebarLayoutProps) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -304,15 +297,11 @@ export function SidebarLayout({
         </SidebarContent>
       </Sidebar>
 
-      <SidebarInset
-        aria-label={`${title} ${subtitle}`}
-        className="max-h-screen overflow-hidden flex flex-col"
-      >
+      <SidebarInset className="max-h-screen overflow-hidden flex flex-col">
         <HeaderBar
           groups={groupedNav}
           navigate={navigate}
           pathname={pathname}
-          title={title}
         />
         <div className="flex-1 overflow-y-auto">{children}</div>
       </SidebarInset>
