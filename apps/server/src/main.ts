@@ -29,6 +29,7 @@ async function bootstrap() {
   });
   app.setGlobalPrefix(REQUEST_CONFIG.prefix);
   await app.listen(3000, "0.0.0.0");
+  console.log("Server is running on http://localhost:3000");
 }
 
 bootstrap();
