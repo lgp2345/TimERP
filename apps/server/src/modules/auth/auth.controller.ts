@@ -13,15 +13,15 @@ import {
   captchaResponseSchema,
   type LoginRequest,
   type LogoutRequest,
-  type RefreshSessionRequest,
-  type SwitchCompanyRequest,
   loginRequestSchema,
   logoutRequestSchema,
+  type RefreshSessionRequest,
   refreshSessionRequestSchema,
+  type SwitchCompanyRequest,
   switchCompanyRequestSchema,
 } from "@repo/schema";
-import { and, eq, inArray, or } from "drizzle-orm";
 import { compare } from "bcryptjs";
+import { and, eq, inArray, or } from "drizzle-orm";
 import type { FastifyRequest } from "fastify";
 import { I18nService } from "nestjs-i18n";
 import { ZodError } from "zod";
@@ -37,9 +37,9 @@ import {
   roles,
   users,
 } from "../../database/schema";
-import { AuthCaptchaService } from "./auth-captcha.service";
-import { type AuthUser } from "./auth.types";
 import { AuthGuard } from "./auth.guard";
+import { type AuthUser } from "./auth.types";
+import { AuthCaptchaService } from "./auth-captcha.service";
 import { CurrentUser } from "./current-user.decorator";
 import { JwtAuthService } from "./jwt-auth.service";
 
@@ -151,7 +151,10 @@ export class AuthController {
         .from(companies)
         .innerJoin(companyDomains, eq(companyDomains.companyId, companies.id))
         .where(
-          and(eq(companyDomains.host, host), inArray(companies.id, companyIdList))
+          and(
+            eq(companyDomains.host, host),
+            inArray(companies.id, companyIdList)
+          )
         )
         .limit(1)
         .then((rows) => rows[0]);
@@ -409,7 +412,9 @@ export class AuthController {
       refreshSessionRequestSchema.parse
     );
 
-    const claims = await this.jwtAuthService.verifyRefreshToken(input.refreshToken);
+    const claims = await this.jwtAuthService.verifyRefreshToken(
+      input.refreshToken
+    );
     const now = new Date();
     const tokenHash = this.jwtAuthService.hashToken(input.refreshToken);
     const db = this.databaseService.db;
@@ -425,7 +430,11 @@ export class AuthController {
       .limit(1)
       .then((rows) => rows[0]);
 
-    if (!currentToken || currentToken.revokedAt || currentToken.expiresAt <= now) {
+    if (
+      !currentToken ||
+      currentToken.revokedAt ||
+      currentToken.expiresAt <= now
+    ) {
       throw new UnauthorizedException("Invalid refresh token");
     }
 
@@ -435,7 +444,10 @@ export class AuthController {
       .where(eq(refreshTokens.id, currentToken.id));
 
     const hostName = host?.split(":")[0];
-    const membership = await this.resolveActiveMembershipForUser(claims.sub, hostName);
+    const membership = await this.resolveActiveMembershipForUser(
+      claims.sub,
+      hostName
+    );
     const tokens = await this.issueTokens({
       userId: claims.sub,
       companyId: membership.companyId,
@@ -455,9 +467,14 @@ export class AuthController {
 
   @Post("logout")
   async logout(@Body() body: unknown) {
-    const input = this.parseBody<LogoutRequest>(body, logoutRequestSchema.parse);
+    const input = this.parseBody<LogoutRequest>(
+      body,
+      logoutRequestSchema.parse
+    );
     try {
-      const claims = await this.jwtAuthService.verifyRefreshToken(input.refreshToken);
+      const claims = await this.jwtAuthService.verifyRefreshToken(
+        input.refreshToken
+      );
       const tokenHash = this.jwtAuthService.hashToken(input.refreshToken);
       const now = new Date();
       await this.databaseService.db
