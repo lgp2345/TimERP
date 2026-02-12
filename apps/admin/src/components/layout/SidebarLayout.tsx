@@ -304,12 +304,14 @@ export function SidebarLayout({
         </SidebarContent>
       </Sidebar>
 
-      <SidebarInset className="max-h-screen overflow-hidden flex flex-col">
+      <SidebarInset
+        aria-label={`${title} ${subtitle}`}
+        className="max-h-screen overflow-hidden flex flex-col"
+      >
         <HeaderBar
           groups={groupedNav}
           navigate={navigate}
           pathname={pathname}
-          subtitle={subtitle}
           title={title}
         />
         <div className="flex-1 overflow-y-auto">{children}</div>
