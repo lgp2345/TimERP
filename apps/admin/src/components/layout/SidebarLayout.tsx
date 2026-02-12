@@ -17,6 +17,7 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { HeaderBar } from "./components/HeaderBar";
 
 export type SidebarNavItem = {
   key: string;
@@ -304,10 +305,13 @@ export function SidebarLayout({
       </Sidebar>
 
       <SidebarInset className="max-h-screen overflow-hidden flex flex-col">
-        <header className="border-b bg-background/80 px-5 py-4 backdrop-blur h-[70px]">
-          <p className="font-semibold text-lg">{title}</p>
-          <p className="text-muted-foreground text-sm">{subtitle}</p>
-        </header>
+        <HeaderBar
+          groups={groupedNav}
+          navigate={navigate}
+          pathname={pathname}
+          subtitle={subtitle}
+          title={title}
+        />
         <div className="flex-1 overflow-y-auto">{children}</div>
       </SidebarInset>
     </SidebarProvider>
