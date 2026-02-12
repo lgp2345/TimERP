@@ -6,11 +6,9 @@ import {
   PanelLeftOpen,
 } from "lucide-react";
 import { type Dispatch, type SetStateAction, useMemo, useState } from "react";
-import { ThemeModeButton } from "@/components/ThemeMode";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
@@ -251,7 +249,7 @@ export function SidebarLayout({
           isSidebarCollapsed && "md:w-20"
         )}
       >
-        <SidebarHeader className="px-3">
+        <SidebarHeader className="px-3 h-[70px]">
           <div className="flex items-center justify-between gap-2 relative">
             <div className="flex min-w-0 items-center gap-2">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary">
@@ -303,33 +301,14 @@ export function SidebarLayout({
               </SidebarMenu>
             ))}
         </SidebarContent>
-
-        <SidebarFooter className="space-y-3">
-          {isSidebarCollapsed ? null : (
-            <div className="rounded-lg border border-sidebar-border bg-sidebar-accent/45 p-3">
-              <p className="font-medium text-sm">企业看板</p>
-              <p className="mt-1 text-sidebar-foreground/75 text-xs">
-                数据刷新中，保持节奏。
-              </p>
-            </div>
-          )}
-          <div
-            className={cn(
-              "flex",
-              isSidebarCollapsed ? "justify-center" : "justify-end"
-            )}
-          >
-            <ThemeModeButton />
-          </div>
-        </SidebarFooter>
       </Sidebar>
 
-      <SidebarInset className="min-h-screen">
-        <header className="border-b bg-background/80 px-5 py-4 backdrop-blur">
+      <SidebarInset className="max-h-screen overflow-hidden flex flex-col">
+        <header className="border-b bg-background/80 px-5 py-4 backdrop-blur h-[70px]">
           <p className="font-semibold text-lg">{title}</p>
           <p className="text-muted-foreground text-sm">{subtitle}</p>
         </header>
-        {children}
+        <div className="flex-1 overflow-y-auto">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );
