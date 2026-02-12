@@ -52,6 +52,40 @@ type LoginSubmitValue = {
 };
 type LoginFieldName = "captcha" | "companyCode" | "password" | "userName";
 
+const REMEMBER_LOGIN_KEY = "login-remember";
+
+type RememberLoginPayload = Pick<
+  LoginSubmitValue,
+  "companyCode" | "userName" | "rememberMe"
+>;
+
+const getRememberLoginPayload = (): RememberLoginPayload | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  const raw = window.localStorage.getItem(REMEMBER_LOGIN_KEY);
+  if (!raw) {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(raw) as Partial<RememberLoginPayload>;
+    if (
+      typeof parsed.companyCode === "string" &&
+      typeof parsed.userName === "string" &&
+      typeof parsed.rememberMe === "boolean"
+    ) {
+      return {
+        companyCode: parsed.companyCode,
+        userName: parsed.userName,
+        rememberMe: parsed.rememberMe,
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
+
 const getCaptchaValidationResult = (
   value: string,
   t: TranslateFn
@@ -96,7 +130,10 @@ const submitLoginForm = async (params: {
   captchaId: string | null;
   loginMutationAsync: (payload: LoginRequest) => Promise<LoginResponse>;
   onFieldError: (field: LoginFieldName, message: string) => void;
-  onSuccess: (response: LoginResponse) => void;
+  onSuccess: (payload: {
+    response: LoginResponse;
+    value: LoginSubmitValue;
+  }) => void;
   refreshCaptcha: () => Promise<void>;
   t: TranslateFn;
   value: LoginSubmitValue;
@@ -135,7 +172,7 @@ const submitLoginForm = async (params: {
       captchaCode: value.captcha,
     });
     const response = await loginMutationAsync(validated);
-    onSuccess(response);
+    onSuccess({ response, value });
   } catch (error: unknown) {
     if (error instanceof ZodError) {
       const firstError = error.issues[0];
@@ -200,17 +237,22 @@ function Login() {
   );
   const validateCaptcha = useMemo(() => createCaptchaFieldValidator(t), [t]);
 
+  const rememberPayload = useMemo<RememberLoginPayload | null>(
+    () => getRememberLoginPayload(),
+    []
+  );
+
   useEffect(() => {
     refreshCaptcha().catch(() => null);
   }, [refreshCaptcha]);
 
   const form = useForm({
     defaultValues: {
-      companyCode: "",
-      userName: "",
+      companyCode: rememberPayload?.companyCode ?? "",
+      userName: rememberPayload?.userName ?? "",
       password: "",
       captcha: "",
-      rememberMe: false,
+      rememberMe: rememberPayload?.rememberMe ?? false,
     },
     onSubmit: ({ value }) =>
       submitLoginForm({
@@ -222,8 +264,23 @@ function Login() {
             errors: [message],
           }));
         },
-        onSuccess: (response) => {
+        onSuccess: ({ response, value: submitValue }) => {
           setLoginContext(response);
+          if (typeof window !== "undefined") {
+            if (submitValue.rememberMe) {
+              const payload: RememberLoginPayload = {
+                companyCode: submitValue.companyCode,
+                userName: submitValue.userName,
+                rememberMe: true,
+              };
+              window.localStorage.setItem(
+                REMEMBER_LOGIN_KEY,
+                JSON.stringify(payload)
+              );
+            } else {
+              window.localStorage.removeItem(REMEMBER_LOGIN_KEY);
+            }
+          }
           navigate({ to: "/" });
         },
         refreshCaptcha,
