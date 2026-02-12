@@ -25,6 +25,7 @@ import { and, eq, inArray, or } from "drizzle-orm";
 import type { FastifyRequest } from "fastify";
 import { I18nService } from "nestjs-i18n";
 import { ZodError } from "zod";
+import { ResponseMessage } from "../../common/decorators/response-message.decorator";
 import { DatabaseService } from "../../database/database.service";
 import {
   companies,
@@ -300,12 +301,14 @@ export class AuthController {
   }
 
   @Get("captcha")
+  @ResponseMessage("captcha created")
   getCaptcha() {
     const captcha = this.authCaptchaService.createCaptcha();
     return captchaResponseSchema.parse(captcha);
   }
 
   @Post("login")
+  @ResponseMessage("login success")
   async login(@Body() body: unknown, @Req() req: FastifyRequest) {
     const input = this.parseBody<LoginRequest>(body, loginRequestSchema.parse);
     const captchaOk = this.authCaptchaService.verifyCaptcha(
@@ -373,6 +376,7 @@ export class AuthController {
 
   @Post("switch-company")
   @UseGuards(AuthGuard)
+  @ResponseMessage("switch company success")
   async switchCompany(
     @Body() body: unknown,
     @CurrentUser() currentUser: AuthUser,
@@ -402,6 +406,7 @@ export class AuthController {
   }
 
   @Post("refresh-session")
+  @ResponseMessage("refresh success")
   async refreshSession(
     @Body() body: unknown,
     @Req() req: FastifyRequest,
@@ -466,6 +471,7 @@ export class AuthController {
   }
 
   @Post("logout")
+  @ResponseMessage("logout success")
   async logout(@Body() body: unknown) {
     const input = this.parseBody<LogoutRequest>(
       body,

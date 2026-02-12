@@ -1,12 +1,15 @@
 import "reflect-metadata";
 import { VersioningType } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import { Reflector } from "@nestjs/core";
 import {
   FastifyAdapter,
   type NestFastifyApplication,
 } from "@nestjs/platform-fastify";
 import { REQUEST_CONFIG } from "@repo/config/request";
 import { AppModule } from "./app.module";
+import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
+import { ResponseInterceptor } from "./common/interceptors/response.interceptor";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -27,6 +30,9 @@ async function bootstrap() {
     defaultVersion: REQUEST_CONFIG.version,
     prefix: REQUEST_CONFIG.versionPrefix,
   });
+  const reflector = app.get(Reflector);
+  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalInterceptors(new ResponseInterceptor(reflector));
   app.setGlobalPrefix(REQUEST_CONFIG.prefix);
   await app.listen(3000, "0.0.0.0");
   console.log("Server is running on http://localhost:3000");
