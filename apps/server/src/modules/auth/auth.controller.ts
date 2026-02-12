@@ -43,6 +43,7 @@ import { type AuthUser } from "./auth.types";
 import { AuthCaptchaService } from "./auth-captcha.service";
 import { CurrentUser } from "./current-user.decorator";
 import { JwtAuthService } from "./jwt-auth.service";
+import { PermissionsGuard } from "./permissions.guard";
 
 @Controller("auth")
 export class AuthController {
@@ -375,7 +376,7 @@ export class AuthController {
   }
 
   @Post("switch-company")
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, PermissionsGuard)
   @ResponseMessage("switch company success")
   async switchCompany(
     @Body() body: unknown,

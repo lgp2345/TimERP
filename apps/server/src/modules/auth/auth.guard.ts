@@ -4,24 +4,18 @@ import {
   type ExecutionContext,
   UnauthorizedException,
 } from "@nestjs/common";
-import type { FastifyRequest } from "fastify";
 import { JwtAuthService } from "./jwt-auth.service";
+import { type AuthenticatedRequest } from "./auth.types";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private readonly jwtAuthService: JwtAuthService) {}
 
+  /**
+   * Validates bearer access token and attaches auth user context to request.
+   */
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<
-      FastifyRequest & {
-        authUser?: {
-          id: string;
-          companyId: string;
-          membershipId: string;
-          jti: string;
-        };
-      }
-    >();
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const rawAuthorization = request.headers.authorization;
     const authorization = Array.isArray(rawAuthorization)
       ? rawAuthorization[0]

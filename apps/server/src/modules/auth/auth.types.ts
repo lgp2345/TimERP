@@ -1,3 +1,5 @@
+import type { FastifyRequest } from "fastify";
+
 export type AccessTokenClaims = {
   sub: string;
   companyId: string;
@@ -17,4 +19,9 @@ export type AuthUser = {
   companyId: string;
   membershipId: string;
   jti: string;
+  permissionCodes?: string[];
+};
+
+export type AuthenticatedRequest = FastifyRequest & {
+  authUser?: AuthUser;
 };
