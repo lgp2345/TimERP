@@ -16,6 +16,21 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from "@/components/ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { HeaderBar } from "./components/HeaderBar";
 
@@ -52,7 +67,12 @@ type SidebarNavEntryButtonProps = {
   routeOpen: boolean;
   isSidebarCollapsed: boolean;
   depth: number;
-  onClick: () => void;
+  onClick?: () => void;
+};
+
+type SidebarCollapsedDropdownItemsProps = {
+  items: SidebarNavItem[];
+  navigate: ReturnType<typeof useNavigate>;
 };
 
 /**
@@ -146,6 +166,55 @@ function SidebarNavEntryButton({
 }
 
 /**
+ * Renders collapsed sidebar dropdown items recursively.
+ */
+function SidebarCollapsedDropdownItems({
+  items,
+  navigate,
+}: SidebarCollapsedDropdownItemsProps) {
+  const visibleItems = items.filter((entry) => !entry.disabled);
+
+  return visibleItems.map((entry) => {
+    const visibleChildren = (entry.children ?? []).filter((child) => !child.disabled);
+    const hasChildren = visibleChildren.length > 0;
+
+    if (hasChildren) {
+      return (
+        <DropdownMenuSub key={entry.key}>
+          <DropdownMenuSubTrigger>
+            {entry.icon ? <entry.icon className="h-4 w-4 shrink-0" /> : null}
+            <span className="flex-1 truncate">{entry.label}</span>
+          </DropdownMenuSubTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuSubContent>
+              <SidebarCollapsedDropdownItems
+                items={visibleChildren}
+                navigate={navigate}
+              />
+            </DropdownMenuSubContent>
+          </DropdownMenuPortal>
+        </DropdownMenuSub>
+      );
+    }
+
+    return (
+      <DropdownMenuItem
+        disabled={!entry.path}
+        key={entry.key}
+        onSelect={() => {
+          if (entry.path) {
+            navigate({ to: entry.path as never });
+          }
+        }}
+      >
+        {entry.icon ? <entry.icon className="h-4 w-4 shrink-0" /> : null}
+        <span className="flex-1 truncate">{entry.label}</span>
+      </DropdownMenuItem>
+    );
+  });
+}
+
+/**
  * Renders a single sidebar navigation entry with optional nested routes.
  */
 function SidebarNavEntry({
@@ -167,23 +236,95 @@ function SidebarNavEntry({
   const itemIsActive = isRouteActive(pathname, item.path);
   const hasChildren = visibleChildren.length > 0;
   const routeOpen = hasChildren ? (openRouteKeys[item.key] ?? false) : false;
-  const canShowChildren = Boolean(
-    !isSidebarCollapsed && hasChildren && routeOpen
-  );
+  const useCollapsedDropdown = Boolean(isSidebarCollapsed && hasChildren);
   const isNestedItem = depth > 0;
 
   const handleItemClick = () => {
-    if (hasChildren) {
-      setOpenRouteKeys((prev) => ({
-        ...prev,
-        [item.key]: !(prev[item.key] ?? true),
-      }));
-      return;
-    }
     if (item.path && !item.disabled) {
       navigate({ to: item.path as never });
     }
   };
+
+  if (useCollapsedDropdown) {
+    return (
+      <SidebarMenuItem key={item.key}>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarNavEntryButton
+              depth={depth}
+              hasChildren={hasChildren}
+              isSidebarCollapsed={isSidebarCollapsed}
+              item={item}
+              itemIsActive={itemIsActive}
+              routeOpen={routeOpen}
+            />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56" side="right">
+            <SidebarCollapsedDropdownItems
+              items={visibleChildren}
+              navigate={navigate}
+            />
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    );
+  }
+
+  if (hasChildren) {
+    return (
+      <Collapsible
+        asChild
+        key={item.key}
+        onOpenChange={(open) => {
+          setOpenRouteKeys((prev) => ({
+            ...prev,
+            [item.key]: open,
+          }));
+        }}
+        open={routeOpen}
+      >
+        <SidebarMenuItem>
+          <CollapsibleTrigger asChild>
+            <SidebarNavEntryButton
+              depth={depth}
+              hasChildren={hasChildren}
+              isSidebarCollapsed={isSidebarCollapsed}
+              item={item}
+              itemIsActive={itemIsActive}
+              routeOpen={routeOpen}
+            />
+          </CollapsibleTrigger>
+          <CollapsibleContent
+            className={cn(
+              "CollapsibleContent mt-1 overflow-hidden",
+              "data-[state=open]:animate-[collapsible-down_200ms_ease-out]",
+              "data-[state=closed]:animate-[collapsible-up_200ms_ease-out]"
+            )}
+          >
+            <SidebarMenu
+              className={cn(
+                "border-sidebar-border border-l pl-2",
+                isNestedItem ? "ml-4" : "ml-5"
+              )}
+            >
+              {visibleChildren.map((child) => (
+                <SidebarNavEntry
+                  depth={depth + 1}
+                  isSidebarCollapsed={isSidebarCollapsed}
+                  item={child}
+                  key={child.key}
+                  navigate={navigate}
+                  openRouteKeys={openRouteKeys}
+                  pathname={pathname}
+                  setOpenRouteKeys={setOpenRouteKeys}
+                />
+              ))}
+            </SidebarMenu>
+          </CollapsibleContent>
+        </SidebarMenuItem>
+      </Collapsible>
+    );
+  }
 
   return (
     <SidebarMenuItem key={item.key}>
@@ -196,28 +337,6 @@ function SidebarNavEntry({
         onClick={handleItemClick}
         routeOpen={routeOpen}
       />
-
-      {canShowChildren ? (
-        <SidebarMenu
-          className={cn(
-            "mt-1 border-sidebar-border border-l pl-2",
-            isNestedItem ? "ml-4" : "ml-5"
-          )}
-        >
-          {visibleChildren.map((child) => (
-            <SidebarNavEntry
-              depth={depth + 1}
-              isSidebarCollapsed={isSidebarCollapsed}
-              item={child}
-              key={child.key}
-              navigate={navigate}
-              openRouteKeys={openRouteKeys}
-              pathname={pathname}
-              setOpenRouteKeys={setOpenRouteKeys}
-            />
-          ))}
-        </SidebarMenu>
-      ) : null}
     </SidebarMenuItem>
   );
 }
