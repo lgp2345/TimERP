@@ -11,6 +11,8 @@ import {
   companies,
   membershipRoles,
   memberships,
+  permissions,
+  rolePermissions,
   roles,
   users,
 } from "../../database/schema";
@@ -38,6 +40,7 @@ export class SystemBootstrapService implements OnApplicationBootstrap {
     const role = await this.ensureOwnerRole(company.id);
     const membership = await this.ensureMembership(user.id, company.id);
     await this.ensureMembershipRole(membership.id, role.id);
+    await this.ensureDepartmentPermissions(role.id);
 
     this.logger.log(
       `system bootstrap completed: company=${company.code}, user=${user.username}, role=${role.code}`
@@ -225,6 +228,105 @@ export class SystemBootstrapService implements OnApplicationBootstrap {
       .values({
         membershipId,
         roleId,
+      })
+      .onConflictDoNothing();
+  }
+
+  private async ensureDepartmentPermissions(roleId: string): Promise<void> {
+    const targets = [
+      {
+        code: "department.read",
+        resource: "department",
+        action: "read",
+        description: "Read departments",
+      },
+      {
+        code: "department.create",
+        resource: "department",
+        action: "create",
+        description: "Create departments",
+      },
+      {
+        code: "department.update",
+        resource: "department",
+        action: "update",
+        description: "Update departments",
+      },
+      {
+        code: "department.delete",
+        resource: "department",
+        action: "delete",
+        description: "Delete departments",
+      },
+      {
+        code: "department.member.manage",
+        resource: "department_member",
+        action: "manage",
+        description: "Manage membership department relationships",
+      },
+    ] as const;
+
+    for (const item of targets) {
+      const permissionId = await this.ensurePermission(
+        item.code,
+        item.resource,
+        item.action,
+        item.description
+      );
+      await this.ensureRolePermission(roleId, permissionId);
+    }
+  }
+
+  private async ensurePermission(
+    code: string,
+    resource: string,
+    action: string,
+    description: string
+  ): Promise<string> {
+    const db = this.databaseService.db;
+    const existing = await db
+      .select({ id: permissions.id })
+      .from(permissions)
+      .where(eq(permissions.code, code))
+      .limit(1)
+      .then((rows) => rows[0]);
+    if (existing) {
+      return existing.id;
+    }
+
+    await db
+      .insert(permissions)
+      .values({
+        code,
+        resource,
+        action,
+        effect: "allow",
+        description,
+      })
+      .onConflictDoNothing();
+
+    const created = await db
+      .select({ id: permissions.id })
+      .from(permissions)
+      .where(eq(permissions.code, code))
+      .limit(1)
+      .then((rows) => rows[0]);
+    if (!created) {
+      throw new Error(`failed to ensure permission: ${code}`);
+    }
+    return created.id;
+  }
+
+  private async ensureRolePermission(
+    roleId: string,
+    permissionId: string
+  ): Promise<void> {
+    const db = this.databaseService.db;
+    await db
+      .insert(rolePermissions)
+      .values({
+        roleId,
+        permissionId,
       })
       .onConflictDoNothing();
   }

@@ -4,6 +4,7 @@ import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { DatabaseModule } from "./database";
 import { AuthModule } from "./modules/auth/auth.module";
+import { DepartmentModule } from "./modules/department/department.module";
 import { I18nModule } from "./modules/i18n";
 import { SystemBootstrapModule } from "./modules/system-bootstrap/system-bootstrap.module";
 
@@ -16,6 +17,7 @@ import { SystemBootstrapModule } from "./modules/system-bootstrap/system-bootstr
     DatabaseModule,
     I18nModule,
     AuthModule,
+    DepartmentModule,
     SystemBootstrapModule,
   ],
   controllers: [AppController],

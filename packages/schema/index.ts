@@ -14,4 +14,18 @@ export {
   type SwitchCompanyRequest,
   switchCompanyRequestSchema,
 } from "./src/auth";
+export {
+  type AssignMembershipDepartmentRequest,
+  assignMembershipDepartmentRequestSchema,
+  type CreateDepartmentRequest,
+  createDepartmentRequestSchema,
+  type ListDepartmentsRequest,
+  listDepartmentsRequestSchema,
+  type SetDepartmentManagerRequest,
+  type SetPrimaryDepartmentRequest,
+  setDepartmentManagerRequestSchema,
+  setPrimaryDepartmentRequestSchema,
+  type UpdateDepartmentRequest,
+  updateDepartmentRequestSchema,
+} from "./src/department";
 export { type PermissionCode, permissionCodeSchema } from "./src/rbac";
