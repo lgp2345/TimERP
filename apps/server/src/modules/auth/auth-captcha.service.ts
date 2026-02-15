@@ -1,5 +1,5 @@
-import { Injectable } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
+import { Injectable } from "@nestjs/common";
 import svgCaptcha from "svg-captcha";
 
 type CaptchaRecord = {

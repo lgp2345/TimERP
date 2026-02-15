@@ -33,7 +33,10 @@ export const memberships = pgTable(
   },
   (t) => [
     uniqueIndex("membership_user_company_unique").on(t.userId, t.companyId),
-    uniqueIndex("membership_company_member_no_unique").on(t.companyId, t.memberNo),
+    uniqueIndex("membership_company_member_no_unique").on(
+      t.companyId,
+      t.memberNo
+    ),
     index("membership_company_status_idx").on(t.companyId, t.status),
     index("membership_user_status_idx").on(t.userId, t.status),
   ]

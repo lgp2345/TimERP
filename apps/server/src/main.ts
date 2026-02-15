@@ -1,7 +1,6 @@
 import "reflect-metadata";
 import { VersioningType } from "@nestjs/common";
-import { NestFactory } from "@nestjs/core";
-import { Reflector } from "@nestjs/core";
+import { NestFactory, Reflector } from "@nestjs/core";
 import {
   FastifyAdapter,
   type NestFastifyApplication,

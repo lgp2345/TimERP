@@ -1,6 +1,6 @@
 import { Controller, Get, UseGuards } from "@nestjs/common";
-import { type AuthUser } from "./modules/auth/auth.types";
 import { AuthGuard } from "./modules/auth/auth.guard";
+import { type AuthUser } from "./modules/auth/auth.types";
 import { CurrentUser } from "./modules/auth/current-user.decorator";
 import { RequirePermissions } from "./modules/auth/permissions.decorator";
 import { PermissionsGuard } from "./modules/auth/permissions.guard";

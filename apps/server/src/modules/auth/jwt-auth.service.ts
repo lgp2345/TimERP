@@ -1,7 +1,7 @@
+import { createHash, randomUUID } from "node:crypto";
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { SignJWT, jwtVerify } from "jose";
-import { createHash, randomUUID } from "node:crypto";
+import { jwtVerify, SignJWT } from "jose";
 import { type AccessTokenClaims, type RefreshTokenClaims } from "./auth.types";
 
 @Injectable()
@@ -18,14 +18,17 @@ export class JwtAuthService {
     const refreshSecret =
       this.configService.get<string>("JWT_REFRESH_SECRET") ?? baseSecret;
 
-    if (!accessSecret || !refreshSecret) {
+    if (!(accessSecret && refreshSecret)) {
       throw new Error("JWT_ACCESS_SECRET and JWT_REFRESH_SECRET are required");
     }
 
     this.accessSecret = new TextEncoder().encode(accessSecret);
     this.refreshSecret = new TextEncoder().encode(refreshSecret);
     this.accessTtlSeconds = this.readTtl("JWT_ACCESS_EXPIRES_IN", 3600);
-    this.refreshTtlSeconds = this.readTtl("JWT_REFRESH_EXPIRES_IN", 60 * 60 * 24 * 30);
+    this.refreshTtlSeconds = this.readTtl(
+      "JWT_REFRESH_EXPIRES_IN",
+      60 * 60 * 24 * 30
+    );
   }
 
   private readTtl(key: string, fallbackSeconds: number): number {

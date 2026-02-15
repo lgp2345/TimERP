@@ -48,6 +48,48 @@ export const users = pgTable(
   ]
 );
 
+// Stores external/provider account bindings for a user.
+export const accounts = pgTable(
+  "accounts",
+  {
+    // Primary key for the account record.
+    id: uuid("id").defaultRandom().primaryKey(),
+    // Provider-side unique account identifier.
+    accountId: text("account_id").notNull(),
+    // Auth provider identifier (for example: credential, google, github).
+    providerId: text("provider_id").notNull(),
+    // User that owns this account binding.
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    // Provider access token.
+    accessToken: text("access_token"),
+    // Provider refresh token.
+    refreshToken: text("refresh_token"),
+    // Provider id token.
+    idToken: text("id_token"),
+    // Access token expiration timestamp.
+    accessTokenExpiresAt: timestamp("access_token_expires_at"),
+    // Refresh token expiration timestamp.
+    refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+    // Authorized scope string from provider.
+    scope: text("scope"),
+    // Credential password hash (kept for migration compatibility).
+    password: text("password"),
+    // Record creation time.
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    // Record last update time.
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("account_provider_account_unique").on(
+      t.providerId,
+      t.accountId
+    ),
+    index("account_user_id_idx").on(t.userId),
+  ]
+);
+
 // Stores refresh tokens used for JWT rotation and revocation.
 export const refreshTokens = pgTable(
   "refresh_tokens",

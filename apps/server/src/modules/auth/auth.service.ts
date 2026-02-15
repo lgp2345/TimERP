@@ -344,7 +344,9 @@ export class AuthService {
     req: FastifyRequest,
     host?: string
   ) {
-    const claims = await this.jwtAuthService.verifyRefreshToken(input.refreshToken);
+    const claims = await this.jwtAuthService.verifyRefreshToken(
+      input.refreshToken
+    );
     const now = new Date();
     const tokenHash = this.jwtAuthService.hashToken(input.refreshToken);
     const db = this.databaseService.db;
@@ -397,7 +399,9 @@ export class AuthService {
 
   async logout(input: LogoutRequest) {
     try {
-      const claims = await this.jwtAuthService.verifyRefreshToken(input.refreshToken);
+      const claims = await this.jwtAuthService.verifyRefreshToken(
+        input.refreshToken
+      );
       const tokenHash = this.jwtAuthService.hashToken(input.refreshToken);
       const now = new Date();
       await this.databaseService.db
