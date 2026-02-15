@@ -10,7 +10,10 @@ type HeaderBreadcrumbsProps = {
 /**
  * Renders breadcrumb navigation in header.
  */
-export function HeaderBreadcrumbs({ items, onNavigate }: HeaderBreadcrumbsProps) {
+export function HeaderBreadcrumbs({
+  items,
+  onNavigate,
+}: HeaderBreadcrumbsProps) {
   return (
     <nav aria-label="breadcrumb" className="flex min-w-0 items-center gap-1.5">
       {items.map((item, index) => {

@@ -7,15 +7,10 @@ import {
 } from "lucide-react";
 import { type Dispatch, type SetStateAction, useMemo, useState } from "react";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,10 +22,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+} from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { HeaderBar } from "./components/HeaderBar";
 
@@ -175,7 +175,9 @@ function SidebarCollapsedDropdownItems({
   const visibleItems = items.filter((entry) => !entry.disabled);
 
   return visibleItems.map((entry) => {
-    const visibleChildren = (entry.children ?? []).filter((child) => !child.disabled);
+    const visibleChildren = (entry.children ?? []).filter(
+      (child) => !child.disabled
+    );
     const hasChildren = visibleChildren.length > 0;
 
     if (hasChildren) {

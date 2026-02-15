@@ -32,7 +32,9 @@ export function HeaderCacheTabs({
   return (
     <div className="flex items-center gap-2 overflow-x-auto pb-1">
       {items.map((item) => {
-        const isActive = Boolean(item.path && isRouteActive(activePath, item.path));
+        const isActive = Boolean(
+          item.path && isRouteActive(activePath, item.path)
+        );
         return (
           <button
             className={cn(
