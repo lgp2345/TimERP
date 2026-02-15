@@ -15,9 +15,7 @@ import { cn } from "@/lib/utils";
 /**
  * Dropdown menu root container.
  */
-export function DropdownMenu({
-  ...props
-}: React.ComponentProps<typeof Root>) {
+export function DropdownMenu({ ...props }: React.ComponentProps<typeof Root>) {
   return <Root {...props} />;
 }
 

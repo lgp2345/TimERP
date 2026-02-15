@@ -8,9 +8,7 @@ import type * as React from "react";
 /**
  * Collapsible root container.
  */
-export function Collapsible({
-  ...props
-}: React.ComponentProps<typeof Root>) {
+export function Collapsible({ ...props }: React.ComponentProps<typeof Root>) {
   return <Root {...props} />;
 }
 
